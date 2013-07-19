@@ -1,0 +1,126 @@
+<html>
+    <head>
+        <title>Play manual - Play 1.0.1 -- Release notes</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Play1.0.1Releasenotes">Play 1.0.1 &#8212; Release notes</h1><p><b>Play 1.0.1</b> is a maintenance release of the Play 1.0 branch. It fixes a lot of small bugs, provides a better binding for persistent JPA objects, auto-escaping of HTML and JavaScript code in templates to avoid XSS security problems.</p><p class="note"><b>Play 1.0.1</b> is a maintenance release and is fully compatible with the 1.0 version. If you encounter any problems please ask us on the Google Group.</p><p>You can read about the fixed bugs on the <a href="http://www.playframework.org/roadmap/1.0.1">1.0.1 road map page</a>. The most important changes are highlighted in this page:</p><h2 id="aAutomaticescapingforHTMLcodeintemplatesa"><a>Automatic escaping for HTML code in templates</a></h2><p>Now all dynamic expressions are escaped by the template engine to avoid XSS security issues in your application. So the <code>title</code> variable containing <code>&lt;h1>Title&lt;/h1></code> is now escaped:</p><pre><code>${title} --> &amp;lt;h1&amp;gt;Title&amp;lt;/h1&amp;gt;
+</code></pre><p>If you really want to display it in an unescaped way, you need to explicitely call the <code>raw()</code> method:</p><pre><code>${title.raw()} --> &lt;h1>Title&lt;/h1>
+</code></pre><p>Also, if you want to display a large part of raw HTML, you can use the <code>#{verbatim /}</code> tag:</p><pre><code>#{verbatim}
+    ${title} --> &lt;h1>Title&lt;/h1>
+#{/verbatim}
+</code></pre><p>Of course, as this feature can break existing applications, it is not enabled by default. You can enable it by adding the following line to your <code>application.conf</code> file:</p><pre><code>future.escapeInTemplates=true
+</code></pre><p>This line is  added to new applications created with the 1.0.1 release.</p><h2 id="ajavax.inject.Injectsupporta"><a>@javax.inject.Inject support</a></h2><p>You can now use the <code>@Inject</code> annotation if you are using a Dependency Injection container like the one provided by the <a href="http://localhost:9000/@documentation/spring">Spring module</a>. The <code>@Inject</code> annotation automatically injects defined beans in your controllers, jobs and mailer. It works on static fields. </p><p>For example to inject a <code>PriceWatcher</code> service defined in Spring to one of your controllers, just do:</p><pre><code>public class Application extends Controller {
+    
+    @Inject
+    static PriceWatcher prices;
+    
+    public static void index() {
+        prices.getAll(); // prices is defined here
+    }
+    
+}
+</code></pre><p>Auto-reload should work as expected.</p><h2 id="aBetterbindingforJPAobjectsa"><a>Better binding for JPA objects</a></h2><p>Previously there was no way to automatically bind a JPA object using the HTTP to Java binding. For example:</p><pre><code>public static void save(User user) {
+    user.save(); // fail in 1.0
+}
+</code></pre><p><code>User</code> being a JPA entity class, this code failed because user was a transient object created by the Binder and not yet managed by Hibernate.</p><p>The old way was to use the <code>edit()</code> method, like:</p><pre><code>public static void save(Long id) {
+    User user = User.findById(id);
+    user.edit(params);
+    user.save(); // ok
+}
+</code></pre><p>Now you can provide the <code>user.id</code> field yourself in the HTTP parameters. When Play finds the <code>id</code> field, it loads the matching instance from the database before editing it. The other parameters provided by the HTTP request are then applied. So you can save it directly.</p><pre><code>public static void save(User user) {
+    user.save(); // ok with 1.0.1
+}
+</code></pre><p>Of course as this feature can break existing applications it is not enabled by default. You can enable it by adding the following line to your <code>application.conf</code> file:</p><pre><code>future.bindJPAObjects=true
+</code></pre><p>This line is added to new applications created with the 1.0.1 release.</p><h2 id="aFrameworkIDcanbesetfromthecommandlinea"><a>Framework ID can be set from the command line</a></h2><p>The framework ID allows you to run different configurations for a same Play application (ie dev, test, staging, production, etc…).</p><p>Using the command line, you can now specify the application <a href="ids.html">framework ID</a> the application will use. For example, to run an application in production mode:</p><pre><code>play run --%production
+</code></pre><p>With these lines defined in the <code>application.conf</code> file:</p><pre><code>application.mode=dev
+%production.application.mode=prod
+</code></pre><p>It is compatible with all the existing commands using the framework ID information. The default ID is still defined using the <code>play id</code> command.</p><p>By the way, <code>play test</code> is then equivalent to:</p><pre><code>play run --%test
+</code></pre><h2 id="aCustomvalidationa"><a>Custom validation</a></h2><p>Can’t find the validator you need in the <code>play.data.validation</code> package? Write your own. You can use the generic <code>@CheckWith</code> annotation to bind your own <code>Check</code> implementation.</p><p>For example:</p><pre><code>public class User {
+    
+    @Required
+    @CheckWith(MyPasswordCheck.class)
+    public String password;
+    
+    static class MyPasswordCheck extends Check {
+        
+        public abstract boolean isSatisfied(Object user, Object password) {
+            return notMatchPreviousPasswords(password);
+        }
+        
+    }
+}
+</code></pre><h2 id="aTestrunnerupdatea"><a>Test runner update</a></h2><p>We’ve updated Selenium to the 1.0.1 final version and improved the UI. Selenium tests now run in fullscreen. And some new functionality like the &#8220;Run all tests&#8221; have been added.</p><p><img border="0" src="images/selenium-fullscreen"/></p><p>Also local documentation is now available when you run your application in test mode.</p><h2 id="aHTML5asdefaultdoctypeandJQueryinnewapplicationsa"><a>HTML5 as default doctype and JQuery in new applications</a></h2><p>New applications come with a default HTML skeleton. Previously it was a <b>XHTML 1.0 Transitional</b> formatted HTML. Now it comes with a <b>HTML5</b> doctype by default:</p><pre><code>&lt;!DOCTYPE html>
+ 
+&lt;html>
+    &lt;head>
+        &lt;title>#{get 'title' /}&lt;/title>
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        &lt;link rel="stylesheet" type="text/css" media="screen" href="@{'/public/stylesheets/main.css'}">
+        #{get 'moreStyles' /}
+        &lt;link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
+        &lt;script src="@{'/public/javascripts/jquery-1.3.2.min.js'}" type="text/javascript" charset="utf-8">&lt;/script>
+        #{get 'moreScripts' /}
+    &lt;/head>
+    &lt;body>
+        #{doLayout /}
+    &lt;/body>
+&lt;/html>
+</code></pre><p>It’s just the default and you can of course change it to any doctype if you wish. However <a href="http://html5.org">HTML5</a> is surely the future and is way simpler.</p><p>The default template comes with the <b>JQuery</b> JavaScript library. This is because modern web applications need a good JavaScript framework and we love <a href="http://www.jquery.com">JQuery</a>. Again it is just the default and you can of course override it with whatever JavaScript library you want.</p><p>Oh, and it comes with two default placeholders to inject even more scripts and/or styles. For example, add in your view:</p><pre><code>#{set 'moreScripts'}
+&lt;script src="@{'/public/javascripts/gears_init.js'}" type="text/javascript">
+&lt;/script>
+#{/set}
+</code></pre><p>And the gear JavaScript library will be accessible in your view.</p><h2 id="aImprovedlisttaga"><a>Improved #{list} tag</a></h2><p>The <code>items</code> parameter is now optional and can be replaced by the default <code>arg</code> argument.</p><p>So you can rewrite:</p><pre><code>#{list items:users, as:'user'}
+    &lt;li>${user}&lt;/li>
+#{/list}
+</code></pre><p>as:</p><pre><code>#{list users, as:'user'}
+    &lt;li>${user}&lt;/li>
+#{/list}
+</code></pre><p>The <code>as</code> parameter is now optional as well. It uses <code>_</code> as default variable name:</p><pre><code>#{list users}
+    &lt;li>${_}&lt;/li>
+#{/list}
+</code></pre><h2 id="aNewjsActiontaga"><a>New #{jsAction /} tag</a></h2><p>The <code>#{jsAction /}</code> tag allows to import a server-side defined route as a JavaScript function. It is very useful if you need to call an URL with an AJAX call using free variables.</p><p>Let’s see an example:</p><pre><code>GET     /users/{id}        Users.show
+</code></pre><p>Now you can import this route on the client side:</p><pre><code>&lt;script type="text/javascript">
+    var showUserAction = #{jsAction @Users.show(':id')}
+    
+    var displayUserDetail = function(userId) {
+        $('#userDetail').load( showUserAction({id: userId}) )
+    }
+&lt;/script>
+</code></pre><p>As you see you use the <code>:name</code> syntax to declare free variables. You can mix free and fixed variables together. The <code>#{jsAction /}</code> tag generates a JavaScript function. This function takes a JavaScript object as parameter that must define all the free variables.</p><h2 id="aNewsampleapplicationbookinga"><a>New sample application: ‘booking’</a></h2><p>The <code>booking</code> application is a port of the well known <a href="http://docs.jboss.com/seam/latest/reference/en-US/html/tutorial.html#booking">booking application from the JBoss Seam framework</a>.</p><p>It demonstrates how you can manage complex states client side in a RESTful way with a stateless web framework.</p><p><img border="0" src="images/booking"/></p><h2 id="aEclipsepluginisonitswaya"><a>Eclipse plug-in is on its way</a></h2><p>We are working hard to provide a dedicated Eclipse plug-in. The current status is alpha but already usable. You can find it in the <code>support/eclipse</code> directory of your Play installation.</p><p><img border="0" src="images/eclipse-plugin"/></p><h2 id="aSupportforIntelliJIDEAa"><a>Support for IntelliJ IDEA</a></h2><p>The Play framework now supports <a href="http://www.jetbrains.com/idea/">IntelliJ IDEA</a> out of the box!</p><p>To convert your Play application into an IntelliJ IDEA project, use the <code>idealize</code> command:</p><pre><code># play idealize myApp
+</code></pre><p><img border="0" src="images/intellij"/></p><p>You can use the Run and Debug using the context menu.</p><p class="note">Next release: <span class="next"><a href="releasenotes-1.0.2.html">Play 1.0.2 release notes</a></span></p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

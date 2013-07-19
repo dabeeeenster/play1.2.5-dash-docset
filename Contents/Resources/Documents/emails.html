@@ -1,0 +1,112 @@
+<html>
+    <head>
+        <title>Play manual - Sending e-mail</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Sendingemail">Sending e-mail</h1><p>E-mail functionality uses the <a href="http://commons.apache.org/email/userguide.html">Apache Commons Email</a> library under the hood. You can use the <code>play.libs.Mail</code> utility class to send e-mail very easily.</p><p>A simple e-mail:</p><pre><code>SimpleEmail email = new SimpleEmail();
+email.setFrom("sender@zenexity.fr");
+email.addTo("recipient@zenexity.fr");
+email.setSubject("subject");
+email.setMsg("Message");
+Mail.send(email); 
+</code></pre><p>An HTML e-mail:</p><pre><code>HtmlEmail email = new HtmlEmail();
+email.addTo("info@lunatech.com");
+email.setFrom("sender@lunatech.com", "Nicolas");
+email.setSubject("Test email with inline image");
+// embed the image and get the content id
+URL url = new URL("http://www.zenexity.fr/wp-content/themes/images/logo.png");
+String cid = email.embed(url, "Zenexity logo");
+// set the html message
+email.setHtmlMsg("&lt;html>Zenexity logo - &lt;img src=\"cid:"+cid+"\">&lt;/html>");
+// set the alternative message
+email.setTextMsg("Your email client does not support HTML, too bad :(");
+</code></pre><p>For more information see the <a href="http://commons.apache.org/email/userguide.html">Commons Email documentation</a>.</p><h2 id="anamemvcMailandMVCintegrationa"><a name="mvc">Mail and MVC integration</a></h2><p>You can also send complex, dynamic e-mail using the standard templates mechanism and syntax.</p><p>First,  define a <b>Mailer notifier</b> in your application. Your mailer notifier must subclass <code>play.mvc.Mailer</code> and be part of the <code>notifiers</code> package. </p><p>Each public static method will be an e-mail sender, in a similar manner as actions for an MVC controller. For example:</p><pre><code>package notifiers;
+ 
+import org.apache.commons.mail.*; 
+import play.*;
+import play.mvc.*;
+import java.util.*;
+ 
+public class Mails extends Mailer {
+ 
+   public static void welcome(User user) {
+      setSubject("Welcome %s", user.name);
+      addRecipient(user.email);
+      setFrom("Me &lt;me@me.com>");
+      EmailAttachment attachment = new EmailAttachment();
+      attachment.setDescription("A pdf document");
+      attachment.setPath(Play.getFile("rules.pdf").getPath());
+      addAttachment(attachment);
+      send(user);
+   }
+ 
+   public static void lostPassword(User user) {
+      String newpassword = user.password;
+      setFrom("Robot &lt;robot@thecompany.com>");
+      setSubject("Your password has been reset");
+      addRecipient(user.email);
+      send(user, newpassword);
+   }
+ 
+}
+</code></pre><h3 id="texthtmlemail">text/html e-mail </h3><p>The <code>send</code> method call will render the <code>app/views/Mails/welcome.html</code> template as the e-mail message body.</p><pre><code>&lt;html>&lt;body>&lt;p>Welcome &lt;b>${user.name}&lt;/b>, &lt;/p>
+...
+&lt;/html>
+</code></pre><p>The template for the lostPassword method could look like this:</p><p><code>app/views/Mails/lostPassword.html</code></p><pre><code>&lt;html>
+&lt;body>&lt;head>...&lt;/head>&lt;body>
+&lt;img src="mycompany.com/images"/>
+&lt;p>
+    Hello ${user.name}, Your new password is &lt;b>${newpassword}&lt;/b>.
+&lt;/p>
+&lt;/body>
+&lt;/html>
+</code></pre><h3 id="textplainemail">text/plain e-mail</h3><p>If no HTML template is defined, then a text/plain e-mail is sent using the text template.</p><p>The <code>send</code> method call will render the <code>app/views/Mails/welcome.txt</code> template as the e-mail message body.</p><pre><code>Welcome ${user.name},
+...
+</code></pre><p>The template for the lostPassword method could look like this:</p><p><code>app/views/Mails/lostPassword.txt</code></p><pre><code>Hello ${user.name},
+ 
+Your new password is ${newpassword}.
+</code></pre><h3 id="texthtmlemailwithtextplainalternative">text/html e-mail with text/plain alternative</h3><p>If an HTML template is defined and a text template exists, then the text template will be used as an alternative message. In our previous example, if both <code>app/views/Mails/lostPassword.html</code> and <code>app/views/Mails/lostPassword.txt</code> are defined, then the e-mail will be sent in text/html as defined in lostPassword.html with an alternative part as defined in lostPassword.txt. So you can send nice HMTL e-mail to your friends and still please those geeky friends that still use mutt ;)</p><h3 id="Linkstoyourapplicationinemail">Links to your application in e-mail</h3><p>Your can include links to your application in e-mails like this:</p><pre><code>@@{application.index}
+</code></pre><p>If you send mails from Jobs you have to set <a href="configuration.html#application.baseUrl">application.baseUrl</a> to a valid external base URL for your application.</p><p>For example, to send an e-mail from a Job running on the playframework.org web site, the configuration would look like this:</p><pre><code>application.baseUrl=http://www.playframework.org/
+</code></pre><h2 id="anamesmtpSMTPconfigurationa"><a name="smtp">SMTP configuration</a></h2><p>E-mail functionality is configured by several <a href="configuration.html#mail">mail configuration</a> properties:</p><ul><li>SMTP server - <a href="configuration.html#mail.smtp.host">mail.smtp.host</a></li><li>SMTP server authentication - <a href="configuration.html#mail.smtp.user">mail.smtp.user</a> and <a href="configuration.html#mail.smtp.pass">mail.smtp.pass</a></li><li>encrypted channel - <a href="configuration.html#mail.smtp.channel">mail.smtp.channel</a></li><li>JavaMail SMTP transaction logging - <a href="configuration.html#mail.debug">mail.debug</a>.</li></ul><p>Two additional configuration properties let you override default behaviour:</p><ul><li><a href="configuration.html#mail.smtp.socketFactory.class">mail.smtp.socketFactory.class</a></li><li><a href="configuration.html#mail.smtp.port">mail.smtp.port</a></li></ul><p>By default, in DEV mode, the e-mail will be printed to the console, while in PROD mode it will be sent to the actual SMTP server. You can change the default behaviour in DEV mode by commenting the following line:</p><pre><code># Default is to use a mock Mailer
+mail.smtp=mock
+</code></pre><h3 id="anamegmailUsingGmaila"><a name="gmail">Using Gmail</a></h3><p>To use Gmail’s servers, for example when you deploy with <a href="http://www.playframework.org/modules/playapps">playapps</a>, use this configuration: </p><pre><code>mail.smtp.host=smtp.gmail.com
+mail.smtp.user=yourGmailLogin
+mail.smtp.pass=yourGmailPassword
+mail.smtp.channel=ssl
+</code></pre><p class="note"><b>Continuing the discussion</b><br/> <br/>Now we shall move on to <span class="next"><a href="test.html">Testing the application</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

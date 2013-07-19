@@ -1,0 +1,161 @@
+<html>
+    <head>
+        <title>Play manual - Test your application</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Testyourapplication">Test your application</h1><p>Creating automatic test suites for your application is a good way to make it robust. It allows you to work in a very agile way.</p><p>Play tests are built using <a href="http://www.junit.org/">JUnit 4</a> or <a href="http://seleniumhq.org/">Selenium</a> depending what you want to test. </p><h2 id="anamewritingWritingtestsa"><a name="writing">Writing tests</a></h2><p>The tests must be created in the <code>test/</code> directory. This folder will only be added to the sources path when the application is run in <code>test</code> mode. You can write 3 different kinds of tests.</p><h3 id="Unittest">Unit test</h3><p>A unit test is written using JUnit. In this kind of test you can test the model of your application (including some utilities). </p><p>Here is an example of a Unit test:</p><pre><code>import play.test.*;
+import org.junit.*;
+ 
+public class MyTest extends UnitTest {
+     
+    @Test
+    public void aTest() {
+        assertEquals(2, 1 + 1); // A really important thing to test
+    }
+ 
+    @Test
+    public void testUsers() {
+        assertEquals(3, Users.count()); 
+    }
+}
+</code></pre><h3 id="Functionaltest">Functional test</h3><p>A functional test is written using JUnit. In this kind of test you can test your application by accessing directly the controller objects.</p><p>Here is an example of a Functional test:</p><pre><code>import play.test.*;
+import play.mvc.*;
+import play.mvc.Http.*;
+import org.junit.*;
+ 
+public class ApplicationTest extends FunctionalTest {
+     
+    @Test
+    public void testTheHomePage() {
+        Response response = GET("/");
+        assertStatus(200, response);
+    }
+     
+}
+</code></pre><p>Using the <code>renderArgs()</code> method, you can also get direct access to the arguments passed to the view, instead of having to make assertions about the response itself.  For example:</p><pre><code>@Test
+public void testUserIsFoundAndPassedToView() {
+    Response response = POST("/user/find?name=mark&amp;dob=18011977")
+    assertThat(renderArgs("user"), is(notNullValue());
+    User user = (User) renderArgs("user");
+    assertThat(user.name, is("mark"));
+}
+</code></pre><h3 id="Seleniumtest">Selenium test</h3><p>Acceptance tests are written using Selenium. Here you can test your application by running it in an automated browser. </p><p>Selenium tests are written using HTML tables. You can either use this native syntax or use the <code>#{selenium /}</code> tag.</p><p>Here is an example of a Selenium test:</p><pre><code>#{selenium 'Test security'}
+ 
+    // Try to log in the administration area
+    clearSession()
+    open('/admin')
+    assertTextPresent('Login')
+    type('login', 'admin')
+    type('password', 'secret')
+    clickAndWait('signin')
+ 
+    // Verify that the user in correctly logged in
+    assertText('success', 'Welcom admin!')
+ 
+#{/selenium}
+</code></pre><p>Because Selenium tests are run within your browser access to emails sent by the mock email and to String values placed in the Play Cache must be made using extensions to Selenium.</p><p>Here is an example of accessing the most recent email sent to a specific email account:</p><pre><code>#{selenium 'Test email sending'}
+ 
+    // Open email form and send an email to boron@localhost
+    open('/sendEmail')
+    assertTextPresent('Email form')
+    type('To', 'boron@localhost')
+    type('Subject', 'Berillium Subject')
+    clickAndWait('send')
+ 	
+	// Extract the last email sent to boron@localhost into a JavaScript
+	// variable called email
+	storeLastReceivedEmailBy('boron@localhost', 'email')
+	// Extract the subject line from the email variable into a variable 
+	// called subject
+	store('javascript{/Subject:\s+(.*)/.exec(storedVars["email"])[1]}', 'subject')
+	// Test the contents of the subject variable
+	assertEquals('Berillium Subject', '$[subject]')
+ 
+#{/selenium}
+</code></pre><p>Here is an example of accessing a String stored in the Play Cache (for example the correct answer to a CAPTCHA):</p><pre><code>#{selenium 'Get string from cache'}
+ 
+	open('/register')
+	assertTextPresent('Registration form')
+	type('Email', 'my@email.com')
+	type('Password', 'secretpass')
+	type('Password2', 'secretpass')
+	// .. Fill in the registration form ..
+ 
+	// Get the value of the magicKey variable from the cache
+	// (set to the CAPTCHA answer in the application)
+	storeCacheEntry('magicKey', 'captchaAnswer')
+	// Type it into the form
+	type('Answer', '$[captchaAnswer]')
+ 
+    clickAndWait('register')
+ 
+#{/selenium}
+</code></pre><h2 id="anamefixturesFixturesa"><a name="fixtures">Fixtures</a></h2><p>When you run tests, you need to have stable data for your application. The simplest way is to reset your database before each test.</p><p>The <code>play.test.Fixtures</code> class helps you to manipulate your database and to inject test data. You typically use it in a <code>@Before</code> method of a JUnit test.</p><pre><code>@Before
+public void setUp() {
+    Fixtures.deleteDatabase();
+}
+</code></pre><p>To import data, it is simpler to define them in a YAML file that the Fixtures helper can automatically import.</p><pre><code># Test data
+ 
+Company(google):
+   name:    Google
+ 
+Company(zen):
+   name:    Zenexity
+ 
+User(guillaume):
+   name:    guillaume
+   company: zen
+</code></pre><p>And then: </p><pre><code>@Before
+public void setUp() {
+    Fixtures.deleteDatabase();
+    Fixtures.loadModels("data.yml");
+}
+</code></pre><p class="note">You can read more about Play and YAML in the <a href="yaml.html">YAML manual page</a>.</p><p>For Selenium tests, you can use the <code>#{fixture /}</code> tag:</p><pre><code>#{fixture delete:'all', load:'data.yml' /}
+ 
+#{selenium}
+    
+    // Write your test here
+ 
+#{/selenium}
+</code></pre><p>Sometimes it is convenient to split data into several YAML files. You can load fixtures from multiple files at once:</p><pre><code>Fixtures.loadModels("users.yml", "roles.yml", "permissions.yml");
+</code></pre><p>and for Selenium tests:</p><pre><code>#{fixture delete:'all', load:['users.yml', 'roles.yml', 'permissions.yml'] /}
+</code></pre><h2 id="anamerunningRunningthetestsa"><a name="running">Running the tests</a></h2><p>To run the tests, you must run your application in <code>test</code> mode using the <code>play test</code> command.</p><pre><code># play test myApp
+</code></pre><p>In this mode, Play will automatically load the <code>test-runner</code> module. This module provides a Web based test runner, available at the <a href="http://localhost:9000/@tests">http://localhost:9000/@tests</a> URL.</p><p><img border="0" src="images/test-runner"/></p><p>When you run a test, the result is saved into the <code>/test-result</code> directory of your application.</p><p>On the test runner page, each test is a link. You can ‘right click’ and ‘Open in a new tab’, to run the test directly outside of the test-runner. </p><p>When you run tests this way, Play will start with a special <code>test</code> framework ID. So you can define special configurations in the <code>application.conf</code> file.</p><p>If you want several different test configurations, you can use framework IDs matching the pattern <code>test-?.*</code> (e.g: <code>test-special</code>).</p><p>If you use a framework ID other then the default <code>test</code>, you must make sure ALL test configuration in <code>application.conf</code> is available with that framework ID. When launching test with special test framework ID you do it like this: <code>play test --%test-your-special-id</code></p><p>For example:</p><pre><code>%test.db=mem
+%test.jpa.ddl=create-drop
+</code></pre><h2 id="anamecontinuousContinuousintegrationandrunningthetestsautomaticallya"><a name="continuous">Continuous integration, and running the tests automatically</a></h2><p>The <code>auto-test</code> command does the same as the <code>test</code> command, but it automatically launches a browser, runs all the tests, and stops.</p><p>This is a useful command if you want to set up a continuous integration system; </p><p>After the run, all results are saved to the <code>/test-result</code> directory. Moreover, this directory contains a marker file (either <code>result.failed</code> or <code>result.passed</code>) for the test suite’s final result. Finally, this directory contains all the logs, in an <code>application.log</code> file.</p><p>So setting up a continuous integration system to test your application, could be:</p><ul><li>Checkout the latest version of your application</li><li>Run <code>play auto-test</code></li><li>Wait for the end of the process</li><li>Check for the marker file <code>result.passed</code> or <code>result.failed</code> in the <code>/test-result</code> directory</li></ul><p>Run these steps in a CRON tab, and you’re done!</p><p>You can change the web browser compatibility mode used by the headless browser by configuring <a href="configuration.html#headlessBrowser">headlessBrowser</a>.</p><p class="note"><b>Continuing the discussion</b><br/> <br/>Next: <span class="next"><a href="security.html">Security guide</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

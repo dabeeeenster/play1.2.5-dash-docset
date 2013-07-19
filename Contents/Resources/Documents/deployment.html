@@ -1,0 +1,100 @@
+<html>
+    <head>
+        <title>Play manual - Deployment options</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Deploymentoptions">Deployment options</h1><p>Play applications can be deployed virtually anywhere: inside Servlet containers, as standalone servers, on Heroku, Google Application Engine, Stack, a Cloud, etc...</p><h2 id="anamestandaloneStandalonePlayapplicationsa"><a name="standalone">Standalone Play applications</a></h2><p>The simplest and the most robust way is to simply run your Play application without any container. You can use a frontal HTTP server like Lighttpd or Apache if you need more advanced HTTP features like virtual hosting.</p><p>The built-in HTTP server can serve thousands of HTTP requests per second so it will never be the performance bottleneck. Moreover it uses a more efficient threading model (where a Servlet container uses 1 thread per request). Different <a href="http://playframework.org/modules">modules</a> allow you to use different servers (Grizzly, Netty, etc...) as well.</p><p>Those servers support long polling and allow to manage very long requests (waiting for a long task to complete), and direct streaming of File objects (and any InputStream if you specify the Content-Length), without blocking the execution thread.</p><p>You will have fewer problems running your application this way, as you will use the same environment that you used during the development process. A lot of bugs can be discovered only when you deploy to a JEE application server (different home dir, classloader issues, library conflicts, etc...).</p><p>Please refer to the <a href="production.html">'Put your application in production' page</a> for more information.</p><h2 id="anameappserversJavaEEapplicationserversa"><a name="appservers">Java EE application servers</a></h2><p>Your Play application can also run inside your favorite application server. Most application servers are supported out of the box.</p><h3 id="Supportedapplicationservers">Supported application servers</h3><p>The following application servers are known to work with Play. Please feel free to report any other working deployment.</p><ul><li>JBoss 4.2.x</li><li>JBoss 5.x</li><li>JBoss 6M2</li><li>Glassfish v3</li><li>IBM Websphere 6.1</li><li>IBM Websphere 7</li><li>Geronimo 2.x</li><li>Tomcat 6.x</li><li>Jetty 7.x</li><li>Resin 4.0.5</li></ul><h3 id="Deploying">Deploying</h3><p>You need to package your application as a WAR file. This is easily done with the following command:</p><pre><code>play war myapp -o myapp.war
+</code></pre><p class="note">Please note that your application server must support deployment of exploded WAR files.</p><p>You are now ready to deploy your application.</p><p>You are advised to ‘isolate’ your Play application from the other applications to avoid version mismatches between the application libraries. This step is not standardized by the JEE/Servlet specification, and is therefore vendor-specific.</p><p>We recommend you refer to your application server manual in order to ‘isolate’ your WAR. As an example below is how you isolate a war file in JBoss Application server. Note that this is an optional step:</p><p>Insert the following content (or create the file) in your application war directory at <code>myapp.war/WEB-INF/jboss-web.xml</code>:</p><pre><code>
+&lt;jboss-web>
+ &lt;class-loading java2classloadingcompliance="false">
+ &lt;loader-repository>
+ com.example:archive=unique-archive-name
+ &lt;loader-repository-config>java2ParentDelegation=false&lt;/loader-repository-config>
+ &lt;/loader-repository>
+&lt;/class-loading>
+&lt;/jboss-web>
+</code></pre><p>Replace com.example:archive=unique-archive-name with whatever you wish as long as it is unique.            </p><h3 id="Datasource">Datasource</h3><p>Play also supports Datasource and resource look-up. To use a JNDI Datasource, set the <a href="configuration.html#dbconf">database configuration</a> as shown below:</p><pre><code>db=java:comp/env/jdbc/mydb
+jpa.dialect=org.hibernate.dialect.Oracle10gDialect
+jpa.ddl=verify
+</code></pre><p>The database plugin detects the pattern <code>db=java:</code> and will de-activate the default JDBC system.</p><h3 id="Customweb.xml">Custom web.xml</h3><p>Some application servers, such as IBM Websphere, require you to declare a datasource in a <code>resource-ref</code> element in the Servlet API’s <code>web.xml</code> configuration file. By default, <code>web.xml</code> is a file that is generated by Play when you execute the <code>play war</code> command. To customise the generated <code>web.xml</code>, generate the exploded WAR version, then copy the generated <code>web.xml</code> file to the <code>war/WEB-INF</code> folder in your application. The next time you will execute the <code>play war</code> command, it will copy your custom <code>web.xml</code> from to the generated folder.</p><p>For instance, to declare a datasource for IBM Websphere 7, we can declare a <code>resource-ref</code> in our <code>war/WEB-INF/web.xml</code> file:</p><pre><code>&lt;?xml version="1.0" ?>
+&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+        version="2.4">
+  &lt;display-name>Play! (%APPLICATION_NAME%)&lt;/display-name>
+  &lt;context-param>
+    &lt;param-name>play.id&lt;/param-name>
+    &lt;param-value>%PLAY_ID%&lt;/param-value>
+  &lt;/context-param>
+  &lt;listener>
+      &lt;listener-class>play.server.ServletWrapper&lt;/listener-class>
+  &lt;/listener>
+  &lt;servlet>
+    &lt;servlet-name>play&lt;/servlet-name>
+    &lt;servlet-class>play.server.ServletWrapper&lt;/servlet-class>	
+  &lt;/servlet>
+  &lt;servlet-mapping>
+    &lt;servlet-name>play&lt;/servlet-name>
+    &lt;url-pattern>/&lt;/url-pattern>
+  &lt;/servlet-mapping>
+  &lt;resource-ref>
+        &lt;description>Play Datasource for testDatasource&lt;/description>
+        &lt;res-ref-name>jdbc/mydb&lt;/res-ref-name>
+        &lt;res-type>javax.sql.DataSource&lt;/res-type>
+        &lt;res-auth>Container&lt;/res-auth>
+  &lt;/resource-ref>
+&lt;/web-app>
+</code></pre><p>You can also specify the play id with the play.id system property. This is useful when you want to deploy the same war on different environments. To use it, start your application server with <code>-Dplay.id=test</code> for example. </p><h2 id="anamecloudCloudbasedhostinga"><a name="cloud">Cloud-based hosting</a></h2><h3 id="anameelasticbeanstalkAWSElasticBeanstalka"><a name="elasticbeanstalk">AWS Elastic Beanstalk</a></h3><p><a href="http://aws.amazon.com/en/elasticbeanstalk/">AWS Elastic Beanstalk</a> is Amazon’s Java hosting platform, based on their Amazon Web Services infrastructure. For more information about deploying a Play application, see <a href="http://www.ibm.com/developerworks/java/library/j-javadev2-19/">Java development 2.0: Play-ing with Amazon RDS</a>.</p><h3 id="anamecloudbeesCloudBeesa"><a name="cloudbees">CloudBees</a></h3><p><a href="http://www.cloudbees.com/">CloudBees</a> is a Java application hosting platform. For more information, see the <a href="http://www.playframework.org/modules/cloudbees">CloudBees module</a>.</p><h3 id="anamecloudfondryCloudFoundrya"><a name="cloudfondry">Cloud Foundry</a></h3><p><a href="http://www.cloudfoundry.com/">Cloud Foundry</a> is VMware’s cloud provider. For more information, see <a href="http://iambivas.blogspot.com/2011/08/running-play-framework-application-on.html">Running Play Framework Application on CloudFoundry</a> and the <a href="http://www.playframework.org/modules/cloudfoundry">CloudFoundry module</a>.</p><h3 id="anamegaeGoogleAppEngineGAEa"><a name="gae">Google App Engine (GAE)</a></h3><p>The <a href="http://code.google.com/appengine/">Google App Engine</a> is one of the first cloud hosting platforms, which has different pros and cons compared to generic hosting solutions. In particular, GAE does not support JPA persistence. For more information, see the <a href="http://www.playframework.org/modules/gae">GAE module</a>.</p><h3 id="anameherokuHerokua"><a name="heroku">Heroku</a></h3><p>The <a href="http://www.heroku.com/">Heroku cloud application platform</a> has Play-specific application hosting support. To deploy and run your Play application, use the following steps.</p><p>1. Install the Heroku command line client on <a href="http://toolbelt.herokuapp.com/linux/readme">Linux</a>, <a href="http://toolbelt.herokuapp.com/osx/download">Mac</a>, or <a href="http://toolbelt.herokuapp.com/windows/download">Windows</a>.<br/>2. Install <a href="http://git-scm.com/">git</a> and setup your SSH key.<br/>3. Create an account on <a href="http://heroku.com/signup">Heroku.com</a>.<br/>4. Log in to Heroku from the command line:</p><pre><code>heroku auth:login
+</code></pre><p>5. Create a git repository:</p><pre><code>git init
+</code></pre><p>6. Create a <code>.gitignore</code> file containing the following content, to ignore files generated by Play:</p><pre><code>/tmp
+/modules
+/lib
+/test-result
+/logs
+</code></pre><p>7. Add the files to the git repository and commit them:</p><pre><code>git add .
+git commit -m init
+</code></pre><p>8. Create a new application on Heroku:</p><pre><code>heroku create -s cedar
+</code></pre><p>9. Push the application to Heroku:</p><pre><code>git push heroku master
+</code></pre><p>10. Open the application in your browser:</p><pre><code>heroku open
+</code></pre><p>To view the logs run:</p><pre><code>heroku logs
+</code></pre><p>To scale the application to multiple ‘dynos’ run:</p><pre><code>heroku scale web=2
+</code></pre><p>To use the <a href="http://devcenter.heroku.com/articles/database">Heroku Shared Database</a> in production add the following to your <code>conf/application.conf</code> file:</p><pre><code>%prod.db=${DATABASE_URL}
+%prod.jpa.dialect=org.hibernate.dialect.PostgreSQLDialect
+%prod.jpa.ddl=update
+</code></pre><p>For more information, see the <a href="http://devcenter.heroku.com">Heroku Dev Center</a>.</p><h3 id="anameplayappsplayapps.neta"><a name="playapps">playapps.net</a></h3><p><a href="http://www.playapps.net/">playapps.net</a> is the Play-specific hosting platform from Zenexity, the creators of Play. For more information, see the <a href="http://www.playframework.org/modules/playapps">playapps.net module</a>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

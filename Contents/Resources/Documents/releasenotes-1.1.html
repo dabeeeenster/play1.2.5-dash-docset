@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <title>Play manual - Play 1.1 -- Release notes</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Play1.1Releasenotes">Play 1.1 &#8212; Release notes</h1><p>You can read about the bugs fixed in Play 1.1 on the <a href="http://www.playframework.org/roadmap/1.1">road map page</a>. This page highlights the most important changes.</p><h2 id="anamemigratingMigratingfromPlay1.0.xa"><a name="migrating">Migrating from Play 1.0.x</a></h2><p>Migrating from Play 1.0.x is pretty straightforward. There are no changes to the application layout, so the same application will run on Play 1.0.3.2 or Play 1.1. However if you use any external modules in your application, you may have to use more recent versions that are compatible with Play 1.1. Check the corresponding module pages.</p><ul><li>Some APIs have been removed in Play 1.1, after having been deprecated for a long time, but most of the public API is the same. If you have compilation errors that you don&#8217;t know how to solve, ask on the Google group.</li><li>Plugin order has been changed. If you have a specific plugin that need to run before or after a default one, perhaps you will need to change its index.</li><li>In play.libs.IO, a lot of methods that used to throw checked exceptions are now throwing runtime exceptions. If you were catching the exception you may need to change the exception class or stop catching it.</li><li>In production mode, the database is no longer automatically updated when the model changes. If you want this behavior, add this line to your your application.conf:</li></ul><pre><code>jpa.ddl = update
+</code></pre><h2 id="anameheadlessNewheadlesstestrunnera"><a name="headless">New headless test runner</a></h2><p>As you know, the Play test runner requires a browser to run application tests. This is because of the <a href="http://seleniumhq.org/">Selenium</a> test support, which makes it possible to really test your application running in a browser.</p><p>However, for continuous integration, it&#8217;s sometimes difficult to automatically run a real browser on the integration server. So, since this release, Play embeds a stand-alone headless browser based on <a href="http://htmlunit.sourceforge.net/">HtmlUnit</a>.</p><p>When you run tests with <code>play auto-test</code>, this browser will be used. </p><p><img border="0" src="images/auto-test"/></p><p>Note that the headless browser try to behave like Internet Explorer 8. It&#8217;s a good thing because as most developers use and test locally on a real browser like Firefox or Webkit, it allows to check obvious JavaScript compatibility issues on the integration platform.</p><h2 id="anameserverNewHTTPserverbasedonJBossNettya"><a name="server">New HTTP server based on JBoss Netty</a></h2><p>The Play 1.1 release uses <a href="http://www.jboss.org/netty">JBoss Netty</a> instead of Apache Mina as HTTP server. This should not change anything for your application, and the performance of the HTTP layer be the same as before. However, this fixes some small HTTP bugs that affected Play 1.0.x.</p><p>This new HTTP server will allow us the support more advanced HTTP features soon, such as WebSockets.</p><h2 id="anamelibsUpdatedcorelibrariesandimprovednaminga"><a name="libs">Updated core libraries and improved naming</a></h2><p>As Play framework is a full-stack framework it directly embeds the required Java libraries. All of these libraries have been updated, including the new Hibernate 3.5.x release that provides JPA 2 support.</p><p>We have also adopted a better naming conventions for embedded libraries. If you look in the <code>framework/lib</code> directory you can now see what the exact version of each library is.</p><h2 id="anamemodelNewdatabaseagnosticplay.db.ModelAPIa"><a name="model">New database-agnostic play.db.Model API</a></h2><p>Play 1.1 introduces a new <strong>play.db.Model</strong> API. This API is not intended to be used directly by applications, but it provides a generic datastore interface that can be implemented by module’s creator to provide integration with any kind of datastore (including NoSQL based ones).</p><p>This means that in Play 1.1, JPA support is totally decoupled from the core framework. It is still a default plugin, and is activated automatically if it detects any <strong>@Entity</strong> class, but some features such as <strong>CRUD</strong> and <strong>Fixtures</strong> no longer directly depend on JPA. These components can work with any module that provides an implementation ok <strong>play.db.Model</strong>, such as the <a href="http://www.playframework.org/modules/morphia">play-morphia module for MongoDB</a>.</p><h2 id="anamescalaScalalanguagesupporta"><a name="scala">Scala language support</a></h2><p>The core framework internals have been refactored to work with the Scala language. The <a href="http://www.playframework.org/modules/scala">Scala module</a> provides complete integration for Scala with the Play framework.</p><h2 id="anameglassfishNativeGlassfishdeploymentsupporta"><a name="glassfish">Native Glassfish deployment support</a></h2><p>Play has now a native container for the <a href="https://glassfish.dev.java.net/">Glassfish application server</a>. This means that by adding the Play container to any Glassfish server you can deploy any existing Play application on it.</p><p><img border="0" src="images/glassfish"/></p><p>The Glassfish container is hosted at <a href="http://github.com/playframework/play-glassfish">http://github.com/playframework/play-glassfish</a>, and should be soon available directly in the Glassfish <code>contrib</code> repository.</p><p>Because Glassfish allows to run several applications simultaneously, you can now run several Play applications in a single JVM. </p><p><img border="0" src="images/glassfish2"/></p><p>Note that this is different from packaging your application as a WAR file. The Play container for Glassfish runs applications natively: it doesn&#8217;t use a Servlet container, and does not require that you package your application in a particular way.</p><h2 id="anamerouteHostVirtualhostinginroutesa"><a name="routeHost">Virtual hosting in routes</a></h2><p>The <code>routes</code> file now supports Host matching. this can be useful if action parameters must be extracted from the host parameter. For example, for a SAAS application, you could use:</p><pre><code>GET    {client}.mysoftware.com/         Application.index
+</code></pre><p>and then automatically retrieve the <code>client</code> value as for any other request parameter:</p><pre><code>public static void index(String client) {
+    …
+}
+</code></pre><p>When using the <code>@@{…}</code> notation (absolute reverse routing) in a template, the host will be used if provided by the corresponding route. This can be useful in several situations. </p><p>For example, if you want to use a content distribution network to distribute your static assets in production, you could write a <code>routes</code> file like this:</p><pre><code>#{if play.Play.mode.isDev()}
+    GET     /public/                        staticDir:public
+#{/}
+#{else}
+    GET     assets.myapp.com/               staticDir:public
+#{/}
+</code></pre><p>And in your templates:</p><pre><code>&lt;img src="@@{'/public/images/logo.png'}">
+</code></pre><p>This will be reversed as <code>http://locahost:9000/public/images/logo.png</code> in DEV mode, and <code>http://assets.myapp.com/images/logo.png</code> in PROD mode.</p><h2 id="anamebindingSupportforcustombindinga"><a name="binding">Support for custom binding</a></h2><p>The binding system now supports more customization.</p><h3 id="play.data.binding.As">@play.data.binding.As</h3><p>The first thing is the new <code>@play.data.binding.As</code> annotation that makes it possible to contextually configure a binding. You can use it for example to specify the date format that must be used by the <code>DateBinder</code>:</p><pre><code>public static void update(@As("dd/MM/yyyy") Date updatedAt) {
+	…
+} 
+</code></pre><p>The <code>@As</code> annotation also has internationalisation support, which means that you can provide a specific annotation for each locale:</p><pre><code>public static void update(
+		@As(
+			lang={"fr,de","en","*"}, 
+			value={"dd/MM/yyyy","dd-MM-yyyy","MM-dd-yy"}
+		)
+		Date updatedAt
+	) {
+	…
+}
+</code></pre><p>The <code>@As</code> annotation can work with all binders that support it, including your own binder. For example, using the <code>ListBinder</code>:</p><pre><code>public static void update(@As(",") List&lt;String> items) {
+	…
+}
+</code></pre><p>This binds a simple comma separated <code>String</code> as a <code>List</code>.</p><h3 id="play.data.binding.NoBinding">@play.data.binding.NoBinding</h3><p>The new <code>@play.data.binding.NoBinding</code> annotation allows yous to mark non-bindable fields, resolving potential security issues. For example:</p><pre><code>public class User extends Model {	
+	@NoBinding("profile") public boolean isAdmin;
+	@As("dd, MM yyyy") Date birthDate;
+	public String name;
+}
+ 
+public static void editProfile(@As("profile") User user) {
+	…
+}
+</code></pre><p>In this case, the <code>isAdmin</code> field will never be bound from the <code>editProfile</code> action, even if an malicious user includes a <code>user.isAdmin=true</code> field in a fake form post.</p><h3 id="play.data.binding.TypeBinder">play.data.binding.TypeBinder</h3><p>The <code>@As</code> annotation also allows you to define a completely custom binder. A custom binder is subclass of <code>TypeBinder</code> that you define in your project. For example:</p><pre><code>public class MyCustomStringBinder implements TypeBinder&lt;String> {
+ 
+    public Object bind(String name, Annotation[] anns, String value, 
+    Class clazz) {
+        return "!!" + value + "!!";
+    }
+ 
+}
+</code></pre><p>You can use it in any action, like:</p><pre><code>public static void anyAction(
+@As(binder=MyCustomStringBinder.class) String name) {
+	…
+}
+</code></pre><h3 id="play.data.binding.Global">@play.data.binding.Global</h3><p>Alternatively, you can define a global custom binder that will apply for the corresponding type. For example, you define a binder for the <code>java.awt.Point</code> class like this:</p><pre><code>@Global
+public class PointBinder implements TypeBinder&lt;Point> {
+ 
+    public Object bind(String name, Annotation[] anns, String value, 
+    Class class) {
+		String[] values = value.split(",");
+		return new Point(
+			Integer.parseInt(values[0]), 
+			Integer.parseInt(values[1])
+		);
+    }
+    
+} 
+</code></pre><p>As you see a global binder is a classical binder annotated with <code>@play.data.binding.Global</code>. An external module can contribute binders to a project, which makes it possible to define reusable binder extensions.</p><h2 id="anameasyncHTTPNewpowerfulasyncWSlibrarya"><a name="asyncHTTP">New powerful async WS library</a></h2><p>The <code>play.libs.WS</code> library allow your Play application to behaves like a web client. In this release we have introduced a new asynchronous implementation based on <a href="http://github.com/AsyncHttpClient/async-http-client">AsyncHttpClient</a>. This new implementation provides new <code>xxxAsync</code> methods that allow you to fetch remote resources asynchronously.</p><p>When combined with the <code>waitFor(…)</code> feature, you can use this to build high performance non-blocking applications that mash-up existing applications:</p><pre><code>public static void mirrorFeed() throws Exception {
+	if (request.isNew) {
+		Future&lt;HttpResponse> feed = WS.url(
+			"http://planet.playframework.org/feed"
+		).getAsync();
+		request.args.put("futureFeed", feed);
+		waitFor(feed);
+	} else {
+		HttpResponse res = (
+			(Future&lt;HttpResponse>)request.args.get("futureFeed")
+		).get()
+		renderXml(res.getXml());	
+	}
+}
+</code></pre><h2 id="anameoauthOAuthsupporta"><a name="oauth">OAuth support</a></h2><p>There is now a <code>play.libs.OAuth</code> library that provides <a href="http://oauth.net/">OAuth</a> protocol support. OAuth is an open protocol to allow secure API authorization in a simple and standard method from web applications.</p><p>A new <code>twitter-oauth</code> sample application demonstrates the API usage by connecting securely to the twitter API.</p><p><img border="0" src="images/sample-twitter"/></p><h2 id="anamehttpsHTTPSsupporta"><a name="https">HTTPS support</a></h2><p>The built-in server now supports the HTTPS protocol. You can of course use it in production if you want. It supports certificate management, either via the classical Java <b>keystore</b> or simple <code>cert</code> and <code>key</code> files. To start an HTTPS connector for your application, just declare the <code>https.port</code> configuration property in your <code>application.conf</code> file:</p><pre><code>http.port=9000
+https.port=9443
+</code></pre><p>You need to put your certificates in the <code>conf</code> directory. Play supports X509 certificates and keystore certificates. The X509 certificates must be named as follows:<br/><strong>host.cert</strong> for the certificate and <strong>host.key</strong> for the key. If you are using keystore, then, by default it should be named <strong>certificate.jks</strong>.</p><p>If you are using X509 certificates, then the following parameters can be configured in your <code>application.conf</code> file:</p><pre><code># X509 certificates
+certificate.key.file=conf/host.key
+certificate.file=conf/host.cert
+# In case your key file is password protected
+certificate.password=secret
+trustmanager.algorithm=JKS
+</code></pre><p>If you are using keystore:</p><pre><code>keystore.algorithm=JKS
+keystore.password=secret
+keystore.file=conf/certificate.jks
+</code></pre><p>Note that the values above are the default values.</p><p>You can generate self-signed certificates using <strong>openssl</strong>: </p><pre><code>openssl genrsa 1024 > host.key
+openssl req -new -x509 -nodes -sha1 -days 365 -key host.key > host.cert
+</code></pre><p>If you are using the Java keystore mechanism, then the following properties can be configured in your <code>application.conf</code> file:</p><pre><code># Keystore 
+ssl.KeyManagerFactory.algorithm=SunX509
+trustmanager.algorithm=JKS
+keystore.password=secret
+keystore.file=certificate.jks
+</code></pre><p>The values above are the default values.</p><h2 id="anamecacheNewCachefeaturesa"><a name="cache">New Cache features</a></h2><p>There are two new features that enable easier cache integration for actions and templates. First you can easily cache the result of an action by adding the <code>@play.cache.CacheFor</code> annotation. This is very useful for pseudo static pages.</p><pre><code>@CacheFor("1h")
+public static void index() {
+	render();
+}
+</code></pre><p>Second, there is now a new <code>#{cache}</code> tag that allows to easily cache template fragments:</p><pre><code>&lt;h1>Very complex home page to build&lt;/h1>
+ 
+#{cache 'home-' + connectedUser.email, for:'15min'}
+	…
+#{/cache}
+</code></pre><p>These new features use the same cache implementation as the standard Play cache.</p><h2 id="anamewarWARarchivesarefullyprecompileda"><a name="war">WAR archives are fully precompiled</a></h2><p>The <code>play precompile</code> command now really compile your applications to static Java bytecode. This means that you can distribute a Play application fully-compiled, and that you can remove all <code>app/</code> source files, including templates.</p><p>All <b>WAR</b> files generated by the <code>play war</code> command are now automatically precompiled.</p><p>By default, when you run an application the standard way, Play will always check the application source code to detect changes. If you don&#8217;t care about this step and you want to start your application from precompiled classes, you can specify the <code>precompiled=true</code> system property:</p><pre><code>play start myApp -Dprecompiled=true
+</code></pre><h2 id="anamerouteArgsGlobalrouteargumentsa"><a name="routeArgs">Global route arguments</a></h2><p>The new <code>play.mvc.Controller.routeArgs</code> scope allow to define arguments that will be used globally for any reverse routing during the request. For example, if you have a common parameter for a lot of routes:</p><pre><code>GET     /{lang}/            Application.index
+GET     /{lang}/users       Application.users
+GET     /{lang}/items       Application.items
+</code></pre><p>You can omit the <code>lang</code> parameter for each action, and manage it in a single <code>@Before</code> filter:</p><pre><code>@Before
+static setLang(String lang) {
+    Lang.set(lang);
+    routeArgs.put("lang", lang);
+}
+</code></pre><p>By adding the <code>lang</code> argument to the <code>routeArgs</code> scope, it will automatically be used for reverse routing, even if not specified:</p><pre><code>&lt;a href="@{Application.users()}">Users list&lt;/a>
+</code></pre><p>will be, for example, reversed as:</p><pre><code>&lt;a href="/fr/users">Users list&lt;/a>
+</code></pre><h2 id="anamecommandsMoreflexibilitytowritecustomcommandsa"><a name="commands">More flexibility to write custom commands</a></h2><p>Module creators now have more flexibility to write custom Python commands. A <code>commands.py</code> file contributed by a module can hook into any existing built-in command. Also, commands contributed by modules are now listed by the <code>play help</code> command.</p><h2 id="anameotherOthersmallfeaturesa"><a name="other">Other small features</a></h2><p>There are also some small new features as well as <a href="http://www.playframework.org/roadmap/1.1">230 fixed bugs</a>, including:</p><ul><li>support for namespaces in the <code>play.libs.XPath</code> library</li><li>support of the <code>never</code> value in Jobs scheduling</li><li>mime type to serve static resources can be defined in <code>application.conf</code></li><li>helpers for cross-domain XHR in <code>play.mvc.Http.Response</code></li><li>support for <b>HTTPOnly</b> cookies</li><li>new command <code>play check</code> to check for new Play framework releases.</li></ul></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

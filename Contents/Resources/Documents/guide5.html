@@ -1,0 +1,100 @@
+<html>
+    <head>
+        <title>Play manual - Setting up a captcha</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Settingupacaptcha">Setting up a captcha</h1><p>Because anyone can post a comment to our blog engine, we should protect it a little to avoid automated spam. A simple way to protect a form from this is to add a <a href="http://en.wikipedia.org/wiki/Captcha">captcha</a> image.</p><h2 id="aGeneratingthecaptchaimagea"><a>Generating the captcha image</a></h2><p>We’ll start to see how we can easily generate a captcha image using Play. Basically we will just use another action, except that it will return a binary stream instead of the HTML responses like we’ve returned so far.</p><p>Since Play is a <b>full-stack</b> web framework, we try to include built-in constructs for web applications’ most typical needs; generating a captcha is one of them. We can use the <code>play.libs.Images</code> utility to simply generate a captcha image, and then write it to the HTTP response. </p><p>As usual, we will start with a simple implementation. Add the <code>captcha</code> action to the <code>Application</code> controller:</p><pre><code>public static void captcha() {
+    Images.Captcha captcha = Images.captcha();
+    renderBinary(captcha);
+}
+</code></pre><p>Note that we can pass the captcha object directly to the renderBinary() method because the Images.Captcha class implements java.io.InputStream. </p><p class="note"><b>Don’t forget</b> to import <code>play.libs.*</code>.</p><p>Now add a new route to the <code>/yabe/conf/routes</code> file:</p><pre><code>GET     /captcha                                Application.captcha
+</code></pre><p>And try the <code>captcha</code> action by opening <a href="http://localhost:9000/captcha">http://localhost:9000/captcha</a>.</p><p><img border="0" src="images/guide5-1"/></p><p>It should generate a random text for each refresh.</p><h2 id="aHowdowemanagethestatea"><a>How do we manage the state?</a></h2><p>Until now it was easy, but the most complicated part is coming. To validate the captcha we need to save the random text written to the captcha image somewhere and then check it at the form submission time. </p><p>Of course we could just put the text to the user session at the image generation time and then retrieve it later. But this solution has two drawbacks:</p><p><b>First</b>, the Play session is stored as a cookie. It solves a lot of problems in terms of architecture but has a lot of implications. Data written to the session cookie are signed (so the user can’t modify them) but not encrypted. If we write the captcha code to the session anybody could easily resolve it by reading the session cookie.</p><p><b>Second</b>, remember that Play is a <b>stateless</b> framework. We want to manage things in a purely stateless way. Typically, what happens if a user simultaneously opens two different blog pages with two different captcha images? We have to track the captcha code for each form.</p><p>So to resolve the problem we need two things. We will store the captcha secret key on the server side. Because it is transient data we can easily use the Play <b>Cache</b>. Moreover because cached data have a limited life time it will add one more security mechanism (let’s say that a captcha code will be available for only 10mn). Then to resolve the code later we need to generate a <b>unique ID</b>. This unique ID will be added to each form as an hidden field and implicitly references a generated captcha code.</p><p>This way we elegantly solve our state problem.</p><p>Modify the <code>captcha</code> action as is:</p><pre><code>public static void captcha(String id) {
+    Images.Captcha captcha = Images.captcha();
+    String code = captcha.getText("#E4EAFD");
+    Cache.set(id, code, "10mn");
+    renderBinary(captcha);
+}
+</code></pre><p>Note that the <code>getText()</code> method takes any color as parameter. It will use this color to draw the text.</p><p class="note"><b>Don’t forget</b> to import <code>play.cache.*</code>.</p><h2 id="aAddingthecaptchaimagetothecommentforma"><a>Adding the captcha image to the comment form</a></h2><p>Now, before displaying a comment form we will generate a unique ID. Then we will modify the HTML form to integrate a captcha image using this ID, and add the ID to another hidden field.</p><p>Let’s rewrite the <code>Application.show</code> action:</p><pre><code>public static void show(Long id) {
+    Post post = Post.findById(id);
+    String randomID = Codec.UUID();
+    render(post, randomID);
+}
+</code></pre><p>And now the form in the <code>/yable/app/views/Application/show.html</code> template:</p><pre><code>…
+&lt;p>
+    &lt;label for="content">Your message: &lt;/label>
+    &lt;textarea name="content" id="content">${params.content}&lt;/textarea>
+&lt;/p>
+&lt;p>
+    &lt;label for="code">Please type the code below: &lt;/label>
+    &lt;img src="@{Application.captcha(randomID)}" />
+    &lt;br />
+    &lt;input type="text" name="code" id="code" size="18" value="" />
+    &lt;input type="hidden" name="randomID" value="${randomID}" />
+&lt;/p>
+&lt;p>
+    &lt;input type="submit" value="Submit your comment" />
+&lt;/p>
+…
+</code></pre><p>Good start. The comment form now has a captcha image.</p><p><img border="0" src="images/guide5-2"/></p><h2 id="aValidatingthecaptchaa"><a>Validating the captcha</a></h2><p>Now we just have to validate the captcha. We have added the <code>randomID</code> as an hidden field right? So we can retrieve it in the <code>postComment</code> action, then retrieve the actual code from Cache and finally compare it to the submitted code.</p><p>Not that difficult. Let’s modify the <code>postComment</code> action.</p><pre><code>public static void postComment(
+        Long postId, 
+        @Required(message="Author is required") String author, 
+        @Required(message="A message is required") String content, 
+        @Required(message="Please type the code") String code, 
+        String randomID) 
+{
+    Post post = Post.findById(postId);
+    validation.equals(
+        code, Cache.get(randomID)
+    ).message("Invalid code. Please type it again");
+    if(validation.hasErrors()) {
+        render("Application/show.html", post, randomID);
+    }
+    post.addComment(author, content);
+    flash.success("Thanks for posting %s", author);
+    Cache.delete(randomID);
+    show(postId);
+}
+</code></pre><p>Because we now have more error messages, modify the way we display errors in the <code>show.html</code> template (yes we will just display the first error, it’s good enough):</p><pre><code>.. 
+#{ifErrors}
+    &lt;p class="error">
+        ${errors[0]}
+    &lt;/p>
+#{/ifErrors}
+…
+</code></pre><p class="note">Typically for more complex forms, error messages are not managed this way but externalized in the <code>messages</code> file and each error is printed inside the corresponding field.</p><p>Check that the captcha is now fully functional.</p><p><img border="0" src="images/guide5-3"/></p><p>Great!</p><p class="note">Next: <span class="next"><a href="guide6.html">Add tagging support</a></span>. </p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

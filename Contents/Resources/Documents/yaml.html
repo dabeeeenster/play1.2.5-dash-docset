@@ -1,0 +1,144 @@
+<html>
+    <head>
+        <title>Play manual - YAML</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="YAML">YAML</h1><h2 id="anamesyntaxYAMLsyntaxa"><a name="syntax">YAML syntax</a></h2><p>Your application tests will often use data structures that consist of related model objects, which can be tedious to create programmatically in Java. Play includes a <a href="http://en.wikipedia.org/wiki/YAML">YAML</a> parser which makes the task much simpler.</p><p>Create a YAML file like the following, in the <code>conf</code> directory.</p><pre><code>City(capitalfederal):
+    name: Capital Federal
+    state: Buenos Aires
+
+User(john):
+    name: "John Smith"
+    email: john@john.com
+    lang: es
+    created: 2007-01-01
+
+User(frank):
+    name: "Frank Franken"
+    email: frank@frank.com
+    lang: en
+    created: 2007-08-05
+
+Neighborhood(villalugano):
+    name: Villa Lugano
+    city: capitalfederal
+    tags: "shopping, cafes"
+    users: [john, frank]
+
+Neighborhood(coghlan):
+    name: Coghlan
+    city: capitalfederal
+    tags: "cafes, bars"
+    users: [john]
+
+</code></pre><p>Play’s YAML syntax varies slightly from the standard. Each stanza must start with the name of the model class (eg <code>Neighborhood</code>) and be followed by an identifier in brackets (eg <code>villalugano</code>), which you can use to reference the object elsewhere in the file. This is different to standard YAML syntax, which uses the ampersand character to indicate a reference.</p><p>Play uses <a href="http://code.google.com/p/snakeyaml/">SnakeYAML</a>, which has an excellent <a href="http://code.google.com/p/snakeyaml/wiki/Documentation#YAML_syntax">documentation page</a> with many examples.</p><h2 id="anamemodelModelclassesa"><a name="model">Model classes</a></h2><p>The YAML file can contain one-to-many, many-to-one and many-to-many relationships. These relationships must be explicity annotated in the model classes, and you must indicate which is the &#8220;owning side&#8221; of the relationship.</p><p><code>City.java</code></p><pre><code>package models;
+
+import java.util.List;
+import javax.persistence.*;
+import play.db.jpa.Model;
+
+@Entity
+public class City extends Model {
+    public String name;
+    public String state;
+    
+    // bi-directional one-to-many, inverse side
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    public List&lt;Neighborhood> neighborhoods;
+}
+
+</code></pre><p><code>Neighborhood.java</code></p><pre><code>package models;
+
+import java.util.List;
+import javax.persistence.*;
+import play.db.jpa.Model;
+
+@Entity
+public class Neighborhood extends Model {
+    public String name;
+    
+    // bi-directional one-to-many, owning side
+    @ManyToOne
+    public City city;
+    
+    public String tags;
+    
+    // owning side
+    @ManyToMany
+    public List&lt;User> users;
+}
+
+</code></pre><p><code>User.java</code></p><pre><code>package models;
+
+import java.util.*;
+import javax.persistence.*;
+import play.db.jpa.Model;
+
+@Entity
+//@Table(name = "`user`")
+public class User extends Model {
+    public String name;
+    public String email;
+    public String lang;
+    public Date created;
+    
+    // inverse side of the relation
+    @ManyToMany(mappedBy = "users")
+    public List&lt;Neighborhood> neighborhoods;
+}
+
+
+</code></pre><p class="note">Note that if you are using PostgreSQL you may need to explicitly set the name of the <code>user</code> table with escape characters because <code>user</code> is a reserved word.</p><h2 id="anameloadingLoadingthedatastructureinyourapplicationa"><a name="loading">Loading the data structure in your application</a></h2><p>Typically you will load the data structure defined in the YAML file as part of a <a href="test.html#aFixturesa">unit test</a>. But sometimes you may wish to populate the database with specific data in other circumstances, for example <a href="jobs.html#aBootstrapjoba">when your application starts</a> for the first time.</p><pre><code>import play.*;
+import play.jobs.*;
+import play.test.*;
+import models.*;
+
+@OnApplicationStart
+public class Bootstrap extends Job {
+    public void doJob() {
+        // Check if the database is empty
+        if(User.count() == 0) {
+            Fixtures.loadModels("initial-data.yml");
+        }
+    }
+}
+
+</code></pre><p>The objects will be created in the database, and you can then access them as you would any other model object.</p><pre><code>City city = City.all().first();
+List&lt;Neighborhood> neighborhoods = city.neighborhoods;
+</code></pre></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

@@ -1,0 +1,85 @@
+<html>
+    <head>
+        <title>Play manual - Play modules</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Playmodules">Play modules</h1><p>A Play application can be assembled from several application modules. This allows you to reuse application components across several applications or split a large application into several smaller applications.</p><h2 id="anamewhatWhatisamodulea"><a name="what">What is a module?</a></h2><p>A module is just another Play application; however some differences exist in the way resources are loaded for an application module:</p><ul><li>A module does not have a <code>conf/application.conf</code> file.</li><li>A module can have a <code>conf/routes</code> file, but these routes will not be  loaded automatically.</li><li>All files are first searched for in the main application path, then in all loaded modules.</li><li>A module can contain plain Java code packaged as a JAR file in the module/lib directory.</li><li>A module can include a documentation page.</li><li>Everything in a module is optional.</li></ul><p>You can create a module with the <code>play new-module</code> command.</p><h2 id="anameloadingHowtoloadamodulefromanapplicationa"><a name="loading">How to load a module from an application</a></h2><p>Modules are automatically loaded from the <code>/modules</code> directory of the application. You can use the <a href="dependency.html">dependency management system</a> to automatically manage your application modules.</p><h2 id="anameroutesLoaddefaultroutesfrommodulesa"><a name="routes">Load default routes from modules</a></h2><p>A module can provide a default <code>routes</code> file. You can load it in the main application <code>routes</code> file, using a special route declaration:</p><pre><code># Import the default CRUD routes
+GET     /admin	     module:crud
+</code></pre><p>You can even load routes from all available modules:</p><pre><code>GET     /	     module:*
+</code></pre><h2 id="anamedocumentationAdddocumentationtoamodulea"><a name="documentation">Add documentation to a module</a></h2><p>You can add a documentation page to a module simply by adding a file <code>documentation/manual/home.textile</code> to the module. Use the same Textile syntax as the Play documentation itself, in <code>${play.path}/documentation/manual/</code>.</p><p>If you are running a Play application that uses one or more modules with documentation, then the local Play documentation at <a href="http://localhost:9000/@documentation">http://localhost:9000/@documentation</a> will include links to their documentation pages under <strong>Installed Modules</strong> in the side bar.</p><h2 id="anamerepositoryUsingthemodulerepositorya"><a name="repository">Using the module repository</a></h2><p>The <a href="http://www.playframework.org/modules">module repository</a> identifies all modules contributed by the community. A module can have several versions. You have to check the module’s documentation for which version you need to use for your framework version.</p><p>You can also browse the module repository using the <code>play list-modules</code> command. </p><pre><code>gbo-mac:~ guillaume$ play list-modules
+~        _            _ 
+~  _ __ | | __ _ _  _| |
+~ | '_ \| |/ _' | || |_|
+~ |  __/|_|\____|\__ (_)
+~ |_|            |__/   
+~
+~ play! 1.2, http://www.playframework.org
+~
+~ You can also browse this list online at http://www.playframework.org/modules
+~
+~ [bespin]
+~   Bespin online editor
+~   http://www.playframework.org/modules/bespin
+~   Versions: 1.0, 1.0.1
+~
+~ [cobertura]
+~   Cobertura
+~   http://www.playframework.org/modules/cobertura
+~   Versions: 1.0
+...
+</code></pre><p>You can install a module locally using the <code>play install {module}-{version}</code> command. Installing a module locally allows you to use it from several application without having to install a different copy in each application. It is useful for large modules that are more like framework extensions than extensions to your application.</p><p>For example, to install Scala support in the framework, use:</p><pre><code>play install scala-head
+</code></pre><p>By convention the <code>head</code> version is the unstable version of the module. You can also install the default version of a module by omitting the version information. For example:</p><pre><code>play install scala
+</code></pre><p>Modules installed this way are downloaded to the <code>/modules</code> directory of your framework installation. </p><p>You can change the installation path using the <code>--path</code> option:</p><pre><code>play install gwt --path=my-project
+</code></pre><h2 id="anamecontributingContributinganewmoduletothemodulerepositorya"><a name="contributing">Contributing a new module to the module repository</a></h2><h3 id="anameprerequisitesPrerequisitesa"><a name="prerequisites">Prerequisites</a></h3><p>To register a new module, the following are required.</p><ol><li>A Google account, to post on the Google Group.</li><li>An OpenID for your developer log-in (you can use your Google account for this).</li><li>A module name that matches <code>[a-zA-Z]+</code> regular expression.</li><li>The module must include <a href="modules.1.html#documentation">documentation</a>.</li><li>A module home page with the source code available and a way to report bugs, e.g. a <a href="http://github.com/">GitHub</a>, <a href="http://code.google.com/">Google Code</a> or <a href="http://launchpad.net/">Launchpad</a> project.</li></ol><h3 id="anameregisterModuleregistrationa"><a name="register">Module registration</a></h3><p>To use your Google account as your OpenID, you need to discover its full URL, as follows.</p><ol><li>On <a href="http://www.playframework.org/modules">http://www.playframework.org/modules</a>, under <em>Developer login</em> enter <code>https://www.google.com/accounts/o8/id</code> and click the <em>Login</em> button.</li><li>Log in to your Google account.</li><li>Make a note of the full Google OpenID URL under <em>Developer login</em>, e.g. <code>https://www.google.com/accounts/o8/id?id=BItOawk7q69CFhRarQIo</code></li></ol><p>Post a module registration request on the <a href="https://groups.google.com/forum/#!forum/play-framework">play-framework Google Group</a>. For example:</p><pre><code>Subject: Module registration request: {module name}
+ 
+Module name:
+jqueryui
+ 
+Display name:
+jQuery UI
+ 
+Description:
+Working examples of jQuery UI widgets, integrated with a Play application.
+ 
+Project home page:
+https://github.com/hilton/jqueryui-module
+ 
+OpenID:
+https://www.google.com/accounts/o8/id?id=BItOawk7q69CFhRarQIo
+</code></pre><p>When your module has been registered, you can publish a release.</p><h3 id="anamereleaseReleasingyourmodulea"><a name="release">Releasing your module</a></h3><p>To release your module:</p><ol><li>set the module version number in the first line of <code>conf/dependency.yml</code>, e.g. <code>self: play -> jqueryui 1.0</code></li><li>build the module with the <code>play build-module</code> command</li><li>log in to <a href="http://www.playframework.org/modules">http://www.playframework.org/modules</a> under <em>Developer login</em></li><li>browse to your module’s page, via the link on <a href="http://www.playframework.org/modules/developers">http://www.playframework.org/modules/developers</a> under <em>Your modules</em></li><li>upload the generated ZIP file from your your module’s <code>dist/</code> directory, using the form under <em>Manage module releases</em></li></ol><p>You can of course use the offical Google Group to provide help and share information about your work.</p><p class="note"><b>Continuing the discussion</b><br/> <br/>Learn how efficiently manage your modules using <span class="next"><a href="dependency.html">Dependency management</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

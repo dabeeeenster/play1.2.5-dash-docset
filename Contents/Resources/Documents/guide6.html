@@ -1,0 +1,229 @@
+<html>
+    <head>
+        <title>Play manual - Adding tagging support</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Addingtaggingsupport">Adding tagging support</h1><p>As our blog will contain more posts, it will become more and more difficult to retrieve them. To help classify posts by subject we will add tagging support.</p><h2 id="anamemodelTheTagmodelobjecta"><a name="model">The Tag model object</a></h2><p>We will add one more object to the blog model definition. The <code>Tag</code> class itself is indeed very simple:</p><pre><code>package models;
+ 
+import java.util.*;
+import javax.persistence.*;
+ 
+import play.db.jpa.*;
+ 
+@Entity
+public class Tag extends Model implements Comparable&lt;Tag> {
+ 
+    public String name;
+ 
+    private Tag(String name) {
+        this.name = name;
+    }
+ 
+    public String toString() {
+        return name;
+    }
+ 
+    public int compareTo(Tag otherTag) {
+        return name.compareTo(otherTag.name);
+    }
+}
+</code></pre><p>Because we want something like lazy tag creation we will always get them using the <code>findOrCreateByName(String name)</code> factory method. Let’s add it to the <code>Tag</code> class:</p><pre><code>public static Tag findOrCreateByName(String name) {
+    Tag tag = Tag.find("byName", name).first();
+    if(tag == null) {
+        tag = new Tag(name);
+    }
+    return tag;
+}
+</code></pre><h2 id="anametaggingTaggingpostsa"><a name="tagging">Tagging posts</a></h2><p>Now it is time to link the new <code>Tag</code> model with the <code>Post</code> model. Let’s add the correct relationship to the <code>Post</code> class:</p><pre><code>…
+@ManyToMany(cascade=CascadeType.PERSIST)
+public Set&lt;Tag> tags;
+ 
+public Post(User author, String title, String content) {
+    this.comments = new ArrayList&lt;Comment>();
+    this.tags = new TreeSet&lt;Tag>();
+    this.author = author;
+    this.title = title;
+    this.content = content;
+    this.postedAt = new Date();
+}
+…
+</code></pre><p class="note">Note that we use a <code>TreeSet</code> here in order to keep the tag list in a predictable order (alphabetical order in fact, because of our previous <code>compareTo</code> implementation).</p><p>We will keep this relationship unidirectional.</p><p>We will also add a bunch of helper methods to make tag management simpler. The first one tags a <code>Post</code>:</p><pre><code>…
+public Post tagItWith(String name) {
+    tags.add(Tag.findOrCreateByName(name));
+    return this;
+}
+…
+</code></pre><p>The next one retrieves all posts with a specific tag:</p><pre><code>…
+public static List&lt;Post> findTaggedWith(String tag) {
+    return Post.find(
+        "select distinct p from Post p join p.tags as t where t.name = ?", tag
+    ).fetch();
+}
+…
+</code></pre><p>It is time to write a new test case to test this stuff. Restart the server in <code>test</code> mode by typing:</p><pre><code>$ play test
+</code></pre><p>Now add a new <code>@Test</code> to the <code>BasicTest</code> class:</p><pre><code>@Test
+public void testTags() {
+    // Create a new user and save it
+    User bob = new User("bob@gmail.com", "secret", "Bob").save();
+ 
+    // Create a new post
+    Post bobPost = new Post(bob, "My first post", "Hello world").save();
+    Post anotherBobPost = new Post(bob, "Hop", "Hello world").save();
+ 
+    // Well
+    assertEquals(0, Post.findTaggedWith("Red").size());
+ 
+    // Tag it now
+    bobPost.tagItWith("Red").tagItWith("Blue").save();
+    anotherBobPost.tagItWith("Red").tagItWith("Green").save();
+ 
+    // Check
+    assertEquals(2, Post.findTaggedWith("Red").size());
+    assertEquals(1, Post.findTaggedWith("Blue").size());
+    assertEquals(1, Post.findTaggedWith("Green").size());
+}
+</code></pre><p>Make sure that it works.</p><h2 id="anamemultipleAlittlemoredifficultnowa"><a name="multiple">A little more difficult now</a></h2><p>Well, we won’t use it in our blog right now, but what if we wanted to retrieve posts tagged with several tags? It’s more difficult than it seems.</p><p>I give you the needed JPQL query because you will likely use it in several web projects:</p><pre><code>…
+public static List&lt;Post> findTaggedWith(String... tags) {
+    return Post.find(
+            "select distinct p from Post p join p.tags as t where t.name in (:tags) group by p.id, p.author, p.title, p.content,p.postedAt having count(t.id) = :size"
+    ).bind("tags", tags).bind("size", tags.length).fetch();
+}
+…
+</code></pre><p>The tricky part is that we have to use a <code>having count</code> statement to filter only posts that have exactly <b>all tags</b> from the joined view.</p><p class="note"><b>Note</b> that we cannot use the <code>Post.find("…", tags, tags.count)</code> signature here, because <code>tags</code> is already a <b>vararg</b>.</p><p>You can test it by adding more checks to the previous test:</p><pre><code>…
+assertEquals(1, Post.findTaggedWith("Red", "Blue").size());
+assertEquals(1, Post.findTaggedWith("Red", "Green").size());
+assertEquals(0, Post.findTaggedWith("Red", "Green", "Blue").size());
+assertEquals(0, Post.findTaggedWith("Green", "Blue").size());
+…
+</code></pre><h2 id="anamecloudThetagclouda"><a name="cloud">The tag cloud</a></h2><p>Where we have tags, we need a tag cloud. Let’s add a method to the <code>Tag</code> class to generate the tag cloud:</p><pre><code>public static List&lt;Map> getCloud() {
+    List&lt;Map> result = Tag.find(
+        "select new map(t.name as tag, count(p.id) as pound) from Post p join p.tags as t group by t.name order by t.name"
+    ).fetch();
+    return result;
+}
+</code></pre><p>Here we use a handy Hibernate feature that allows us to return a custom object from a JPA query. This results in a <code>List</code> containing a <code>Map</code> for each tag with two keys: <code>tag</code> for the tag name and <code>pound</code> for the tag count.</p><p>Let’s test it by adding one more check to our tags test:</p><pre><code>…
+List&lt;Map> cloud = Tag.getCloud();
+assertEquals(
+    "[{tag=Blue, pound=1}, {tag=Green, pound=1}, {tag=Red, pound=2}]",
+    cloud.toString()
+);
+</code></pre><h2 id="anamedataAddingtagstotheBlogUIa"><a name="data">Adding tags to the Blog UI</a></h2><p>We can now use the new tagging stuff to add one more way to browse the blog. As always, to work efficiently we need to add a bunch of test tags to our initial data set.</p><p>Modify the <code>/yabe/conf/initial-data.yml</code> file to add some tags to the tests posts. For example:</p><pre><code>…
+Tag(play):
+    name:           Play
+ 
+Tag(architecture):
+    name:           Architecture
+ 
+Tag(test):
+    name:           Test
+ 
+Tag(mvc):
+    name:           MVC
+…
+</code></pre><p>And then add them to the post’s declaration:</p><pre><code>…
+Post(jeffPost):
+    title:          The MVC application
+    postedAt:       2009-06-06
+    author:         jeff
+    tags:
+                    - play
+                    - architecture
+                    - mvc
+    content:        >
+                    A Play
+…
+</code></pre><p class="note">Add the <code>Tags</code> declaration at the top of the YAML file, because they need to be created before any <code>Post</code> references them.</p><p>You need to restart your application to force loading of the new initial data set. Note how Play even tells you about problems in YAML files:</p><p><img border="0" src="images/guide6-1"/></p><p>Then modify the <code>#{display /}</code> tag to show the tag set on the <b>full</b> post view. Edit the <code>/yabe/app/views/tags/display.html</code> file:</p><pre><code>…
+#{if _as != 'full'}
+    &lt;span class="post-comments">
+        &amp;nbsp;|&amp;nbsp; ${_post.comments.size() ?: 'no'}
+        comment${_post.comments.size().pluralize()}
+        #{if _post.comments}
+            , latest by ${_post.comments[0].author}
+        #{/if}
+    &lt;/span>
+#{/if}
+#{elseif _post.tags}
+    &lt;span class="post-tags">
+        - Tagged
+        #{list items:_post.tags, as:'tag'}
+            &lt;a href="#">${tag}&lt;/a>${tag_isLast ? '' : ', '}
+        #{/list}
+    &lt;/span>
+#{/elseif}
+…
+</code></pre><p><img border="0" src="images/guide6-2"/></p><h2 id="anamepageThenewtaggedwithpagea"><a name="page">The new ‘tagged with’ page</a></h2><p>Now we can add a new way to list blog posts by tags. In the <code>#{display /}</code> tag, above, we left the link blank; we will now replace it by a link to the new <code>listTagged</code> action:</p><pre><code>…
+- Tagged
+#{list items:_post.tags, as:'tag'}
+    &lt;a href="@{Application.listTagged(tag.name)}">${tag}&lt;/a>${tag_isLast ? '' : ', '}
+#{/list}
+…
+</code></pre><p>Create the action method on the <code>Application</code> controller:</p><pre><code>…
+public static void listTagged(String tag) {
+    List&lt;Post> posts = Post.findTaggedWith(tag);
+    render(tag, posts);
+}
+…
+</code></pre><p>As always we create a specific route to keep the URI clean:</p><pre><code>GET     /posts/{tag}                    Application.listTagged
+</code></pre><p>We have a problem because we have an existing route that conflicts with this new one. These two routes will match the same URI:</p><pre><code>GET     /posts/{id}                     Application.show
+GET     /posts/{tag}                    Application.listTagged
+</code></pre><p>However, because we’ll assume that an <code>id</code> is numeric and a <code>tag</code> is not, we can easily solve the situation using a regular expression to restrict the first route:</p><pre><code>GET     /posts/{&lt;[0-9]+>id}             Application.show
+GET     /posts/{tag}                    Application.listTagged
+</code></pre><p>Finally, we just have to create the <code>/yabe/app/views/Application/listTagged.html</code> template that will be used by the new <code>listTagged</code> action:</p><pre><code>#{extends 'main.html' /}
+#{set title:'Posts tagged with ' + tag /}
+ 
+*{********* Title ********* }*
+ 
+#{if posts.size() > 1}
+   &lt;h3>There are ${posts.size()} posts tagged '${tag}'&lt;/h3>
+#{/if}
+#{elseif posts}
+    &lt;h3>There is 1 post tagged '${tag}'&lt;/h3>
+#{/elseif}
+#{else}
+    &lt;h3>No post tagged '${tag}'&lt;/h3>
+#{/else}
+ 
+*{********* Posts list *********}*
+ 
+&lt;div class="older-posts">
+    #{list items:posts, as:'post'}
+        #{display post:post, as:'teaser' /}
+    #{/list}
+&lt;/div>
+</code></pre><p><img border="0" src="images/guide6-3"/></p><p>-p(note). Next: <span class="next"><a href="guide7.html">A basic admin area using CRUD</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

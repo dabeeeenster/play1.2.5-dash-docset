@@ -1,0 +1,62 @@
+<html>
+    <head>
+        <title>Play manual - Cheat Sheet</title>
+        <link rel="stylesheet" href="../playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="../playmanual/jquery-1.3.2.min.js"></script>
+        <link rel="stylesheet" href="../playmanual/cheat-sheet.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/cheat-sheet-print.css" type="text/css" media="print" charset="utf-8">
+    </head>
+    <body>
+        <div class="cs-wrapper">
+            <div id="docTopbar">
+                <div id="backToToc">
+                    <span>Back to </span><a href="../home.html">Table of contents</a>
+                </div>
+                <div id="searchBar">
+                    <span>Get help with Google:</span>
+                    <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+                </div>
+                <div class="titlebar">
+                    <h1>Model</h1>
+                </div>
+                <div class="titlebar links">
+                                                                        <a href="commandLine.html" >Command Line</a>                                                 &nbsp;
+                                                                        <a href="controllers.html" >Controllers</a>                                                 &nbsp;
+                                                                         Model
+                                                &nbsp;
+                                                                        <a href="multiEnvironment.html" >Multi Environment</a>                                                 &nbsp;
+                                                                        <a href="templates.html" >Templates</a>                                                 &nbsp;
+                                                                        <a href="tests.html" >Tests</a>                                                 &nbsp;
+                                    </div>
+                <div id="logobar">
+                    <img src="../playmanual/logo.png">
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+            </div>
+            <div id="content" class="wikistyle">
+                                    <div class="cs odd">
+                       <h2 id="Model.actionQueries">Model.action &#8211; Queries</h2><p><strong>Query query = JPA.em().createQuery("jpql_query");</strong><br/>Access the persistence manager</p><p><strong>Post post = Post.findById(id);</strong><br/><strong>List<Post> posts = Post.findAll();</strong><br/>Finder methods</p><p><strong>post.save();</strong><br/>Save the object to the persistent store</p><p><strong>boolean post.validateAndSave();</strong><br/>true if object validates and saved, see validation annotations</p><p><strong>List<Post> posts = Post.all().from(50).fetch(100);</strong><br/>Read records 50 to 100, if any</p><p><strong>Post.find("select p from Post p, Comment c where c.post</strong><br/><strong>= p and c.subject like ?", "%hop%");</strong><br/>Parametrized lookup using a join</p><p><strong>long userCount = Post.count("author=?", connectedUser);</strong><br/><strong>long postCount = Post.count();</strong><br/>Counting records</p><p><strong>JPAPlugin.startTx(boolean readonly);</strong><br/><strong>JPAPlugin.closeTx(boolean rollback);</strong><br/>Custom transaction control methods</p><p><strong>JPA.setRollbackOnly();</strong><br/>Forces a transaction rollback</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="ModelBasics">Model &#8211; Basics</h2><p><strong>@Entity(name="sql_tbl") public class Post extends Model</strong><br/>Specifies that the class is persistent</p><p><strong>@Embedded</strong><br/>Defines this field as being embedded</p><p><strong>@EmbeddedId</strong><br/>Defines this field as being (part of) the identity for the class, and being embedded into this class</p><p><strong>@Embeddable</strong><br/>Specifies that the class is persistent embedded in another persistent class</p><p><strong>@MappedSuperclass</strong><br/>Specifies that this class contains persistent information to be mapped in a subclass</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="ModelGenerators">Model &#8211; Generators</h2><p><strong>@GeneratedValue(strategy = [NONE, TABLE, SEQUENCE,</strong><br/><strong>IDENTITY, AUTO])</strong><br/>Used to generate auto indexes</p><p><strong>@SequenceGenerator</strong><br/>Defines a generator of values using sequences in the datastore for use with persistent entities</p><p><strong>@TableGenerator</strong><br/>Defines a generator of sequences using a table in the datastore for use with persistent entities</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="ModelRelationalmapping">Model &#8211; Relational mapping</h2><p><strong>@Table(name="sql_tbl", catalog="", schema="")</strong><br/>Defines the table where this class will be stored</p><p><strong>@Id</strong><br/>Defines this field as being (part of) the identity for the class</p><p><strong>@Version</strong><br/>Defines this field as storing the version for the class</p><p><strong>@Basic</strong><br/>Defines this field as being persistent, can be omitted</p><p><strong>@Transient</strong><br/>Defines this field as being transient (not persisted)</p><p><strong>@Lob(fetch=[LAZY, EAGER], type=[BLOB,CLOB])</strong><br/>Defines this field as being stored as a large object</p><p><strong>@UniqueConstraint(primary=false, String columns[])</strong><br/>Used to define secondary indexes</p><p><strong>@Temporal(DATE,TIME,TIMESTAMP)</strong><br/>Should only be used on java.util.Date and Calendar fields</p><p><strong>@Enumerated(ORDINAL, STRING)</strong><br/>Defines this field as storing an enumerated class</p><p><strong>@Column(name="sql_column_name")</strong><br/>Defines a table column name that is different to the field name</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="ModelCallbacks">Model &#8211; Callbacks</h2><p>Convenient ways to implement database-independent triggers.</p><p><strong>@PrePersist</strong><br/>Defines this method as being a callback for pre-persist events</p><p><strong>@PostPersist</strong><br/>Defines this method as being a callback for post-persist events</p><p><strong>@PreRemove</strong><br/>Defines this method as being a callback for pre-remove events</p><p><strong>@PostRemove</strong><br/>Defines this method as being a callback for post-remove events</p><p><strong>@PreUpdate</strong><br/>Defines this method as being a callback for pre-update events</p><p><strong>@PostLoad</strong><br/>Defines this method as being a callback for post-load events</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="ModelRelations">Model &#8211; Relations</h2><p><strong>@OneToOne(entity, fetch=[LAZY,EAGER], nullable=true)</strong><br/>Defines this field as being a 1-1 relation with another persistent entity</p><p><strong>@OneToMany(mappedBy="remote_attribute")</strong><br/>Defines this field as being a 1-N relation with other persistent entities</p><p><strong>@ManyToMany(cascade=[ALL, PERSIST, MERGE,</strong><br/><strong>REMOVE, REFRESH, DETACH])</strong><br/>Defines this field as being a M-N relation with other persistent entities</p><p><strong>@ManyToOne</strong><br/>Defines this field as being a N-1 relation with another persistent entity</p><p><strong>@JoinColumn(name = "id_connector")</strong><br/>Defines a column for joining to either a join table or foreign key relation.</p><p><strong>@JoinTable(name = "nm_table", joinColumns =</strong><br/><strong>{ @JoinColumn(name = "id_coupon", nullable = false) },</strong><br/><strong>inverseJoinColumns = { @JoinColumn(name =</strong><br/><strong>"id_campaign", nullable = false) })</strong><br/>Used to map ManyToMany relationships</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="ModelJPAQueries">Model &#8211; JPA Queries</h2><p><strong>@NamedQuery(name="q1", "jpql_query");</strong><br/>Defines a named JPQL query to use in the persistence unit</p><p><strong>@NamedNativeQuery(name="q2","sql_query")</strong><br/>Defines a native SQL query for use in the persistence unit</p><p><strong>@SqlResultSetMapping</strong><br/>Used to map a native SQL query result to the object model</p><p class="note">This is only a subset of the JPA2 annotations, Hibernate also has its own non standard set.</p>
+                    </div>
+                            </div>
+        </div>
+    </body>
+</html>

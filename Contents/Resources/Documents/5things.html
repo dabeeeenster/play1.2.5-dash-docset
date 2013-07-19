@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <title>Play manual - Five cool things you can do with Play</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="FivecoolthingsyoucandowithPlay">Five cool things you can do with Play</h1><p>Five examples to show the philosophy behind the Play framework.</p><h2 id="aBindanHTTPparametertoaJavamethodparametera"><a>Bind an HTTP parameter to a Java method parameter</a></h2><p>Retrieving HTTP parameters from Java code is really simple with Play. Just declare method parameters with the same names as the HTTP parameters.</p><p>For example, with this request:</p><pre><code>/articles/archive?date=08/01/08&amp;page=2
+</code></pre><p>You can retrieve the <code>date</code> and <code>page</code> parameters by declaring them as Java method parameters:</p><pre><code>public static void archive(Date date, Integer page) {
+    List&lt;Article> articles = Articles.fromArchive(date, page);
+    render(articles);
+}
+</code></pre><p>Play will use the method parameter’s static type, to translate the HTTP value into a Java object.</p><p>Smart binding also works <b>with any class.</b></p><pre><code>public class Person {
+    public String name;
+    public Integer age;
+}
+</code></pre><p>A simplistic controller action to add a person may look like this:</p><pre><code>public static void add(Person p) {
+    p.save();
+}
+</code></pre><p>The HTML form defines fields with composite names:</p><pre><code>&lt;form action="/Directory/add" method="POST">
+    Name: &lt;input type="text" name="p.name" />
+    Age: &lt;input type="text" name="p.age" />
+&lt;/form>
+</code></pre><h2 id="aRedirecttoanactionbycallingthecorrespondingJavamethoda"><a>Redirect to an action by calling the corresponding Java method</a></h2><p>There is no equivalent to the Java Servlet <code>forward</code> command with Play. But redirecting to another action is really simple. Just call the corresponding Java method and Play will generate the correct HTTP ‘redirect’ response.</p><pre><code>public static void show(Long id) {
+    Article article = Article.findById(id);
+    render(article);
+}
+ 
+public static void edit(Long id, String title) {
+    Article article = Article.findById(id);
+    article.title = title;
+    article.save();
+    show(id);
+}
+</code></pre><p>Note how at the end of the edit action, we redirect to the show action.</p><p>In any template you can use the equivalent syntax to generate the link:</p><pre><code>&lt;a href="@{Article.show(article.id)}">${article.title}&lt;/a>
+</code></pre><p>That will generate the following HTML:</p><pre><code>&lt;a href="/articles/15">My new article&lt;/a>
+</code></pre><h2 id="aDontRepeatYourselfwhenpassingJavaobjectstotemplatesa"><a>Don’t Repeat Yourself when passing Java objects to templates</a></h2><p>In most Java frameworks, in order to pass Java objects to the template system you need to write something like:</p><pre><code>Article article = Article.findById(id);
+User user = User.getConnected();
+Map&lt;String, Object> model = new HashMap&lt;String,Object>();
+model.put("article", article);
+model.put("user", user);
+render(model);
+</code></pre><p>With Play, you can just write:</p><pre><code>Article article = Article.findById(id);
+User user = User.getConnected();
+render(article, user);
+</code></pre><p>And retrieve objects from their Java local name in the template. That saves a lot of useless lines of code…</p><h2 id="aJPAonsteroidsa"><a>JPA on steroids</a></h2><p>JPA is surely the best object-relational mapping (ORM) API available for Java. If you know it you will be amazed how much simpler it becomes with Play. With nothing to configure, Play will automatically start the JPA Entity Manager using Hibernate and magically synchronize it when code is reloaded.</p><p>Moreover, if you use the provided <code>play.db.jpa.Model</code> superclass it will help to make your code prettier. Take a look:</p><pre><code>public void messages(int page) {
+    User connectedUser = User.find("byEmail", connected()).first();
+    List&lt;Message> messages = Message.find(
+        "user = ? and read = false order by date desc",
+        connectedUser
+    ).from(page * 10).fetch(10);
+    render(connectedUser, messages);
+}
+</code></pre><h2 id="aStraightforwardfileuploadmanagementa"><a>Straightforward file upload management</a></h2><p>File upload management is very simple with Play.</p><p>The HTML form:</p><pre><code>#{form @uploadPhoto(), enctype:'multipart/form-data'}
+    &lt;input type="text" name="title" />
+    &lt;input type="file" id="photo" name="photo" />
+    &lt;input type="submit" value="Send it..." />
+#{/}
+</code></pre><p>And the Java code:</p><pre><code>public static void uploadPhoto(String title, File photo) {
+   ...
+}
+</code></pre><p>How could it be easier?</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

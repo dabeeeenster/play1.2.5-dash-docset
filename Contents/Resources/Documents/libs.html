@@ -1,0 +1,191 @@
+<html>
+    <head>
+        <title>Play manual - Play libs</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Playlibs">Play libs</h1><p>The <code>play.libs</code> package contains several useful libraries that will help you to achieve common programming tasks. </p><p>Most of these libraries are simple helpers that are really straightforward to use: </p><ul><li><a href="http://localhost:9000/@api/play/libs/Codec.html">Codec</a>: Utilities to encode and decode data.</li><li><a href="http://localhost:9000/@api/play/libs/Crypto.html">Crypto</a>: Cryptographics utilities.</li><li><a href="http://localhost:9000/@api/play/libs/Expression.html">Expression</a>: Evaluate dynamic expressions.</li><li><a href="http://localhost:9000/@api/play/libs/F.html">F</a>: Functional programming with Java.</li><li><a href="http://localhost:9000/@api/play/libs/Files.html">Files</a>: File system manipulation helpers.</li><li><a href="http://localhost:9000/@api/play/libs/I18N.html">I18N</a>: Internationalization helpers.</li><li><a href="http://localhost:9000/@api/play/libs/IO.html">IO</a>: Stream manipulation helpers.</li><li><a href="http://localhost:9000/@api/play/libs/Images.html">Images</a>: Image manipulation utilities.</li><li><a href="http://localhost:9000/@api/play/libs/Mail.html">Mail</a>: E-mail functions.</li><li><a href="http://localhost:9000/@api/play/libs/MimeTypes.html">MimeTypes</a>: Dealing with MIME types.</li><li><a href="http://localhost:9000/@api/play/libs/OAuth.html">OAuth</a>: OAuth client protocol.</li><li><a href="http://localhost:9000/@api/play/libs/OAuth2.html">OAuth2</a>: OAuth2 client protocol.</li><li><a href="http://localhost:9000/@api/play/libs/OpenID.html">OpenID</a>: OpenID client protocol.</li><li><a href="http://localhost:9000/@api/play/libs/Time.html">Time</a>: Time and duration utilities.</li><li><a href="http://localhost:9000/@api/play/libs/WS.html">WS</a>: Powerful Web Service client.</li><li><a href="http://localhost:9000/@api/play/libs/XML.html">XML</a>: Loading XML structures.</li><li><a href="http://localhost:9000/@api/play/libs/XPath.html">XPath</a>: Parsing XML using XPath.</li></ul><p>The following sections provide more information about the most important libraries.</p><h2 id="ParsingXMLusingXPath">Parsing XML using XPath</h2><p><a href="http://en.wikipedia.org/wiki/XPath">XPath</a> is probably the easiest way to parse an XML document without having to use code generation tools. The <code>play.libs.XPath</code> library offers all the needed primitives to efficiently achieve this task.</p><p>The <code>XPath</code> operations operate on all <code>org.w3.dom.Node</code> types:</p><pre><code>org.w3.dom.Document xmlDoc = … // retrieve a Document somewhere
+  
+for(Node event: XPath.selectNodes("events//event", xmlDoc)) {
+    
+    String name = XPath.selectText("name", event);
+    String data = XPath.selectText("@date", event);
+    
+    for(Node place: XPath.selectNodes("//place", event)) {
+        String place = XPath.selectText("@city", place);
+        …
+    }
+    
+    …
+}
+</code></pre><h2 id="WebServiceclient">Web Service client</h2><p>The <code>play.libs.WS</code> provides a powerful HTTP client. Under the hood it uses <a href="https://github.com/AsyncHttpClient/async-http-client">Async HTTP client</a>. </p><p>Making a request is easy:</p><pre><code>HttpResponse res = WS.url("http://www.google.com").get();
+</code></pre><p>Once you have an <code>HttpResponse</code> object you can access all the response properties.</p><pre><code>int status = res.getStatus();
+String type = res.getContentType();
+</code></pre><p>You can also retrieve the body content in several content types:</p><pre><code>String content = res.getString();
+Document xml = res.getXml();
+JsonElement json = res.getJson();
+InputStream is = res.getStream();
+</code></pre><p>You can also use the <strong>async</strong> API to make HTTP requests in a non-blocking way. Then you will receive a <code>Promise&lt;HttpResponse></code>. Once redeemed, you can use the <code>HttpResponse</code> as usual:</p><pre><code>Promise&lt;HttpResponse> futureResponse = WS.url(
+    "http://www.google.com"
+).getAsync();
+</code></pre><h2 id="FunctionalprogrammingwithJava">Functional programming with Java</h2><p>The <code>play.libs.F</code> library provide several useful constructs coming from functional programming. These constructs are used to handle complex abstraction cases. For those that are accustomed to functional programming we provide:</p><ul><li><code>Option&lt;T></code> (a T value that can be or not set)</li><li><code>Either&lt;A,B></code> (contains either a A value or a B value)</li><li><code>Tuple&lt;A,B></code> (contains both A and B values)</li></ul><h3 id="OptionTSomeTandNoneT"><code>Option&lt;T></code>, <code>Some&lt;T></code> and <code>None&lt;T></code></h3><p>When you write a function that may not return a result in some cases (e.g. a <code>find</code> method), a common (bad) Java pattern is to return <code>null</code> when there is no result. This practice is dangerous because the function return type does not clearly shows that it may not return an object and it has been recognized by the nullable references inventor to be a <a href="http://en.wikipedia.org/wiki/Pointer_(computing)#Null_pointer">“billion-dollar mistake”</a>.<br/><code>Option&lt;T></code> is an elegant solution to this problem: instead of returning an object of type <code>T</code>, the function returns an <code>Option&lt;T></code>. If the function succeeds, it returns an object of type <code>Some&lt;T></code> (wrapping the real result), otherwise an object of type <code>None&lt;T></code>, which both are subtypes of <code>Option&lt;T></code>.<br/>Here is an example:</p><pre><code>/* Safe division (will never throw a runtime ArithmeticException) */
+public Option&lt;Double> div(double a, double b) {
+    if (b == 0)
+        return None();
+    else
+        return Some(a / b);
+}
+</code></pre><p>Here is a way to use this function:</p><pre><code>Option&lt;Double> q = div(42, 5);
+if (q.isDefined()) {
+    Logger.info("q = %s", q.get()); // "q = 8.4"
+}
+</code></pre><p>But there is a more convenient syntax to use it, leveraging the fact that <code>Option&lt;T></code> implements <code>Iterable&lt;T></code>:</p><pre><code>for (double q : div(42, 5)) {
+    Logger.info("q = %s", q); // "q = 8.4"
+}
+</code></pre><p>The body of the for loop is be executed once, only if the <code>div</code> function succeeded.</p><h3 id="TupleAB"><code>Tuple&lt;A, B></code></h3><p>The handy <code>Tuple&lt;A, B></code> class wraps two objects of type <code>A</code> and <code>B</code>. You can retrieve the objects using the <code>_1</code> and <code>_2</code> fields, respectively. For example:</p><pre><code>public Option&lt;Tuple&lt;String, String>> parseEmail(String email) {
+    final Matcher matcher = Pattern.compile("(\\w+)@(\\w+)").matcher(email);
+    if (matcher.matches()) {
+        return Some(Tuple(matcher.group(1), matcher.group(2)));
+    }
+    return None();
+}
+</code></pre><p>Then:</p><pre><code>for (Tuple&lt;String, String> email : parseEmail("foo@bar.com")) {
+    Logger.info("name = %s", email._1); // "name = foo"
+    Logger.info("server = %s", email._2); // "server = bar.com"
+}
+</code></pre><p class="note">The <code>T2&lt;A, B></code> class is an alias for <code>Tuple&lt;A, B></code>. To handle tuples of 3 elements use the <code>T3&lt;A, B, C></code> class, and so on up to <code>T5&lt;A, B, C, D, E></code>.</p><h3 id="PatternMatching">Pattern Matching</h3><p>Sometimes we feel that we need pattern matching in Java. Unfortunately Java does not have built-in pattern matching, and because of the lack of functional constructs, it is difficult to add it as a library. Anyway we’ve worked on a solution that is not so bad.</p><p>Our idea was to use the latest ‘for loop’ syntax to achieve basic pattern matching for Java. Pattern matching must both check if your object matches the required conditions and extract the interesting value. The Pattern matching library for Play is part of the <code>play.libs.F</code> library.</p><p>Let’s see a simple example; you have a reference of type Object and you want to check that it is a string that starts by ‘command:’. </p><p>The standard way would be:</p><pre><code>Object o = anything();
+ 
+if(o instanceof String &amp;&amp; ((String)o).startsWith("command:")) {
+    String s = (String)o;
+    System.out.println(s.toUpperCase());
+}
+</code></pre><p>Using the Play pattern matching library, you can write it as:</p><pre><code>for(String s: String.and(StartsWith("command:")).match(o)) {
+    System.out.println(s.toUpperCase());
+}
+</code></pre><p>The for loop is executed once, only if the condition is met, and it automatically extracts the String value without the need for casting. Because there is no explicit cast, everything is type-safe, and checked by the compiler.</p><h3 id="Promises">Promises</h3><p>A <code>Promise</code> is Play’s custom <code>Future</code> type. In fact a <code>Promise&lt;T></code> is also a <code>Future&lt;T></code> so you can use it as a standard <code>Future</code>. But it has also a very interesting property: the ability to register callback using <code>onRedeem(…)</code> that will be called as soon as the promised value is available. </p><p><code>Promise</code> instances are used everywhere in Play in place of <code>Future</code> instances (for Jobs, <code>WS.async</code>, etc…).</p><p>Promises can be combined in several ways. For example:</p><pre><code>Promise p = Promise.waitAll(p1, p2, p3)
+Promise p = Promise.waitAny(p1, p2, p3)
+Promise p = Promise.waitEither(p1, p2, p3)
+</code></pre><h2 id="OAuth">OAuth</h2><p><a href="http://oauth.net/">OAuth</a> is an open protocol for secure API authorization, using a simple and standard approach, from desktop and web applications.</p><p>Two different specifications exist: OAuth 1.0 and OAuth 2.0. Play provides libraries to connect as a consumer to services proposing either of these specifications.</p><p>The general process is the following:</p><ul><li>Redirect the user to the provider’s authorization page</li><li>After the user grants authorization, he is redirected back to your server along with an unauthorized token</li><li>Your server exchanges the unauthorized token with an access token specific to the current user, that needs to be saved in order to perform requests to the service. This step is done as server-to-server communication.</li></ul><p>The Play framework takes care of most of the process.</p><h3 id="aOAuth1.0a"><a>OAuth 1.0</a></h3><p>The OAuth 1.0 functionality is provided by the <code>play.libs.OAuth</code> class and is based on <a href="http://code.google.com/p/oauth-signpost/">oauth-signpost</a>. It is used by services such as <a href="http://apiwiki.twitter.com/">Twitter</a> or <a href="http://code.google.com/apis/accounts/docs/OAuth.html">Google</a></p><p>To connect to a service, you need the create a OAuth.ServiceInfo instance using the following information, obtained from the service provider:</p><ul><li>Request token URL</li><li>Access token URL</li><li>Authorize URL</li><li>Consumer key</li><li>Consumer secret</li></ul><p>The access token can be retrieved this way:</p><pre><code>public static void authenticate() {
+    // TWITTER is a OAuth.ServiceInfo object
+    // getUser() is a method returning the current user 
+    if (OAuth.isVerifierResponse()) {
+        // We got the verifier; 
+        // now get the access tokens using the request tokens
+        OAuth.Response resp = OAuth.service(TWITTER).retrieveAccessToken(
+            getUser().token, getUser().secret
+        );
+        // let's store them and go back to index
+        getUser().token = resp.token; getUser().secret = resp.secret;
+        getUser().save()
+        index();
+    }
+    OAuth twitt = OAuth.service(TWITTER);
+    Response resp = twitt.retrieveRequestToken();
+    // We received the unauthorized tokens 
+    // we need to store them before continuing
+    getUser().token = resp.token; getUser().secret = resp.secret;
+    getUser().save()
+    // Redirect the user to the authorization page
+    redirect(twitt.redirectUrl(resp.token));
+}
+</code></pre><p>Calls can now be done by signing the requests using the token pair:</p><pre><code>mentions = WS.url(url).oauth(TWITTER, getUser().token, getUser().secret).get().getString();
+</code></pre><p>While the example doesn&#8217;t check for errors, in production you should. The OAuth.Response object holds an error field that is non-null when an error occurred. Most likely it could be that the user didn&#8217;t grant you access, that the provider is down or buggy.</p><p>The full example usage is available in <code>samples-and-tests/twitter-oauth</code>.</p><h3 id="aOAuth2.0a"><a>OAuth 2.0</a></h3><p>OAuth 2.0 is much simpler than OAuth 1.0 because it doesn’t involve signing requests. It is used by <a href="http://developers.facebook.com/docs/authentication/">Facebook</a> and <a href="http://37signals.com">37signals</a>.</p><p>Functionality is provided by <code>play.libs.OAuth2</code>.</p><p>To connect to a service, you need the create a OAuth2 instance using the following information, obtained from the service provider:</p><ul><li>Access token URL</li><li>Authorize URL</li><li>Client ID</li><li>Secret</li></ul><pre><code>public static void auth() {
+    // FACEBOOK is a OAuth2 object
+    if (OAuth2.isCodeResponse()) {
+        // authUrl must be the same as the retrieveVerificationCode call
+        OAuth2.Response response = FACEBOOK.retrieveAccessToken(authUrl);
+        // null if an error occurred
+        String accessToken = response.accessToken;
+        // null if the call was a success
+        OAuth2.Error = response.error;
+        // Save accessToken, you will need it to request the service
+        index();
+    }
+    // authUrl is a String containing an absolute URL where the service 
+    // should redirect the user back
+    // This will trigger a redirect
+    FACEBOOK.requestVerificationCode(authUrl);
+}
+</code></pre><p>Once you have the access token associated to the current user, you can use it to query the service on behalf of the user:</p><pre><code>WS.url(
+    "https://graph.facebook.com/me?access_token=%s", access_token
+).get().getJson();
+</code></pre><p>The full example usage is available in <code>samples-and-tests/facebook-oauth2</code>.</p><h2 id="OpenID">OpenID</h2><p><a href="http://openid.net/">OpenID</a> is an open and decentralized identity system. You can easily accept new users in your application without having to keep specific user information. You just have to keep track of authorized users through their <b>OpenID</b>.</p><p>This example provides a high-level view of how OpenID authentication can be used within a Play application:</p><ul><li>For each request, check if the user is connected</li><li>If not, display a page where the user can submit his OpenID</li><li>Redirect the user to the OpenID provider</li><li>When the user comes back, get the verified OpenID and save it in the HTTP session.</li></ul><p>The OpenID functionality is provided by the <code>play.libs.OpenID</code> class.</p><pre><code>@Before(unless={"login", "authenticate"})
+static void checkAuthenticated() {
+    if(!session.contains("user")) {
+        login();
+    }
+}
+ 
+public static void index() {
+    render("Hello %s!", session.get("user"));
+}
+     
+public static void login() {
+    render();
+}
+    
+public static void authenticate(String user) {
+    if(OpenID.isAuthenticationResponse()) {
+        UserInfo verifiedUser = OpenID.getVerifiedID();
+        if(verifiedUser == null) {
+            flash.error("Oops. Authentication has failed");
+            login();
+        } 
+        session.put("user", verifiedUser.id);
+        index();
+    } else {
+        if(!OpenID.id(user).verify()) { // will redirect the user
+            flash.error("Cannot verify your OpenID");
+            login();
+        } 
+    }
+}
+</code></pre><p>And the <code>login.html</code> template:</p><pre><code>#{if flash.error}
+&lt;h1>${flash.error}&lt;/h1>
+#{/if}
+ 
+&lt;form action="@{Application.authenticate()}" method="POST">
+    &lt;label for="user">What’s your OpenID?&lt;/label>
+    &lt;input type="text" name="user" id="user" />
+    &lt;input type="submit" value="login…" />
+&lt;/form>
+&lt;/code>
+</code></pre><p>And finally the <code>routes</code> definitions:</p><pre><code>GET   /                     Application.index
+GET   /login                Application.login
+*     /authenticate         Application.authenticate
+</code></pre><p class="note"><b>Continuing the discussion</b><br/> <br/>Now we’ll check how to perform operations outside any HTTP request using <span class="next"><a href="jobs.html">Ansynchronous Jobs</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

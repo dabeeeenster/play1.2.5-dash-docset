@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <title>Play manual - Built-in validations</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Builtinvalidations">Built-in validations</h1><p>Play defines several built-in validations, each of which is used as described in the <a href="validation.html">validation</a> chapter.</p><p>Each validation has an associated error message, defined in <code>$PLAY_HOME/resources/messages</code>, whose key is <code>validation.</code> followed by the validation name. You can override this message by using the same key in your application&#8217;s <code>conf/messages</code> file, and localise it using message files for other languages.</p><p><h2><a name="email">email</a></h2></p><p>Checks that the value is a valid e-mail address.</p><pre><code>validation.email(address);
+</code></pre><p>Annotation syntax:</p><pre><code>@Email String address
+</code></pre><p>Message key: <code>validation.email</code></p><p><h2><a name="equals">equals</a></h2></p><p>Checks that the value is equal to another parameter&#8217;s value, using the value&#8217;s <code>equals</code> method, e.g. for checking for a password confirmation field.</p><pre><code>validation.equals(password, passwordConfirmation);
+</code></pre><p>Annotation syntax:</p><pre><code>@Equals("passwordConfirmation") String password
+</code></pre><p>Message key: <code>validation.equals</code></p><p><h2><a name="future">future</a></h2></p><p>Checks that the value is a date in the future. If a second date is specified as a reference, then the value must be in the future with respect to the reference date &#8211; i.e. after it.</p><pre><code>validation.future(dueDate);
+validation.future(dueDate, shipmentDate);
+</code></pre><p>Annotation syntax:</p><pre><code>@InFuture String dueDate
+@InFuture("1979-12-31") String birthDate
+</code></pre><p>Message key: <code>validation.future</code></p><p><h2><a name="ipv4Address">ipv4Address</a></h2></p><p>Checks that the value is an IP address that complies with the version 4 protocol; empty strings are considered valid.</p><pre><code>validation.ipv4Address(value);
+</code></pre><p>Annotation syntax:</p><pre><code>@IPv4Address String ip
+</code></pre><p>Message key: <code>validation.ipv4</code></p><p><h2><a name="ipv6Address">ipv6Address</a></h2></p><p>Checks that the value is an IP address that complies with the version 6 protocol; empty strings are considered valid.</p><pre><code>validation.ipv6Address(value);
+</code></pre><p>Annotation syntax:</p><pre><code>@IPv6Address String ip
+</code></pre><p>Message key: <code>validation.ipv6</code></p><p><h2><a name="isTrue">isTrue</a></h2></p><p>Checks that the value is a <code>String</code> or <code>Boolean</code> that evaluates to <code>true</code>, e.g. for an &#8216;I agree to the terms&#8217; checkbox that must be checked, or a non-zero <code>Number</code>. Null values are considered false/invalid.</p><pre><code>validation.isTrue(agree);
+</code></pre><p>Annotation syntax:</p><pre><code>@IsTrue String agree
+</code></pre><p>Message key: <code>validation.isTrue</code></p><p><h2><a name="match">match</a></h2></p><p>Checks that the value is a string that matches the given regular expression. Empty strings are considered valid.</p><pre><code>validation.match(abbreviation, "[A-Z]{3}"); // TLA
+</code></pre><p>Annotation syntax:</p><pre><code>@Match("[A-Z]{3}") String abbreviation
+</code></pre><p>Message key: <code>validation.match</code></p><p><h2><a name="max">max</a></h2></p><p>Checks that the value is a <code>String</code> or <code>Number</code> that is no greater than the given number. Null values are considered valid.</p><pre><code>validation.max(wordCount, 7500); // Short story
+</code></pre><p>Annotation syntax:</p><pre><code>@Max(7500) String wordCount
+</code></pre><p>Message key: <code>validation.max</code></p><p><h2><a name="maxSize">maxSize</a></h2></p><p>Checks that the value is a <code>String</code> whose length is no greater than the given length. Empty strings are considered valid.</p><pre><code>validation.maxSize(url, 2083); // IE 4.0 - 8
+</code></pre><p>Annotation syntax:</p><pre><code>@MaxSize(2083) String value
+</code></pre><p>Message key: <code>validation.maxSize</code></p><p><h2><a name="min">min</a></h2></p><p>Checks that the value is a <code>String</code> or <code>Number</code> that is no less than the given number. Null values are considered valid.</p><pre><code>validation.min(age, 18); // Adult
+</code></pre><p>Annotation syntax:</p><pre><code>@Min(18) Long age
+</code></pre><p>Message key: <code>validation.min</code></p><p><h2><a name="minSize">minSize</a></h2></p><p>Checks that the value is a <code>String</code> whose length is no less than the given length. Empty strings are considered valid.</p><pre><code>validation.minSize(value, 42);
+</code></pre><p>Annotation syntax:</p><pre><code>@MinSize(42) String value
+</code></pre><p>Message key: <code>validation.minSize</code></p><p><h2><a name="past">past</a></h2></p><p>Checks that the value is a date in the past. If a second date is specified as a reference, then the value must be in the past with respect to the reference date &#8211; i.e. before it.</p><pre><code>validation.past(actualDepartureDate);
+validation.past(expectedDepartureDate, expectedArrivalDate);
+</code></pre><p>Annotation syntax:</p><pre><code>@InPast String actualDepartureDate
+@InPast("1980-01-01") String birthDate
+</code></pre><p>Message key: <code>validation.past</code></p><p><h2><a name="phone">phone</a></h2></p><p>Checks that the value is a valid phone number; empty strings are considered valid. The validation is relaxed and is intented to enforce a basic phone pattern. Please implement your own @Match for country specific validations.</p><pre><code>validation.phone(value);
+</code></pre><p>Annotation syntax:</p><pre><code>@Phone String phone
+</code></pre><p>Message key: <code>validation.phone</code></p><p>Format: <code>+CCC (SSSSSS)9999999999xEEEE</code><br/> </p><ul><li><code>+</code>          optional country code mark</li><li><code>CCC</code>        optional country code, up to 3 digits, note than it MUST be followed be a delimiter</li><li><code>(SSSSSS)</code>   optional subzone, up to 6 digits</li><li><code>9999999999</code> mandatory number, up to 20 digits (which should cover all know cases current and future)</li><li><code>x</code>          optional extension, can also be spelled &#8220;ext&#8221; or "extension"</li><li><code>EEEE</code>       optional extension number, up to 4 digits</li><li>Delimiters can be either a <em>space</em>, <code>-</code>, <code>.</code> or <code>/</code> and can be used anywhere in the number</li></ul> 
+Examples:<ul><li><code>usa:(305) 613 09 58 ext 101</code></li><li><code>france:+33 1 47 37 62 24 x3</code></li><li><code>germany:+49-4312 / 777 777</code></li><li><code>china:+86 (10)69445464</code></li><li><code>uk:(020) 1234 1234</code></li></ul><p><h2><a name="range">range</a></h2></p><p>Checks that the value is a number within the range (inclusive) specified by the two given numbers.</p><pre><code>validation.range(wordCount, 17500, 40000); // Novella
+</code></pre><p>Annotation syntax:</p><pre><code>@Range(min = 17500, max = 40000) String wordCount
+</code></pre><p>Message key: <code>validation.range</code></p><p><h2><a name="required">required</a></h2></p><p>Checks that the value is a non-empty <code>String</code>, <code>Collection</code>, <code>File</code> or array.</p><pre><code>validation.required(value);
+</code></pre><p>Annotation syntax:</p><pre><code>@Required String value
+</code></pre><p>Message key: <code>validation.required</code></p><p><h2><a name="unique">unique</a></h2></p><p>Checks that the value of the column which has the annotation is unique, by querying the database. (This only works with JPA.) You can define additional columns as a comma-separated list of annotation values. So annotating a property called <code>c</code> with <code>@Unique(&#8220;a, b&#8221;)</code> will check that the combination of the values of properties <code>a</code>, <code>b</code> and <code>c</code> is unique.   </p><p>Annotation syntax:</p><pre><code>@Unique(additionalColumns) String productCode
+@Unique("postCode") String houseNumber
+</code></pre><p>Message key: <code>validation.unique</code></p><p><h2><a name="url">url</a></h2></p><p>Checks that the value is a valid URL; empty strings are considered valid. Note that not all valid URLs (as defined by RFC 1738) are accepted; only URLs with an <code>http</code>, <code>https</code> or <code>ftp</code> scheme are considered valid.</p><pre><code>validation.url(value);
+</code></pre><p>Annotation syntax:</p><pre><code>@URL String address
+</code></pre><p>Message key: <code>validation.url</code></p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

@@ -1,0 +1,62 @@
+<html>
+    <head>
+        <title>Play manual - Manage application.conf in several environments</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Manageapplication.confinseveralenvironments">Manage application.conf in several environments</h1><p>When you work in a team, different developers will use different configuration keys in their <code>application.conf</code>. For example, the log level or some database configuration. This generally leads to recurrent conflicts when you commit the file using your VCS. </p><p>Furthermore, different deployment environments &#8211; e.g. dev, test, staging and production &#8211; need different configurations.</p><h2 id="anameidTheframeworkIDa"><a name="id">The framework ID</a></h2><p>To resolve this problem, Play allows you to give an <b>ID</b> to each framework installation. Use the play tool’s <code>id</code> command to define this ID:</p><pre><code>play id
+</code></pre><p><img border="0" src="images/id"/></p><p>You can then prefix your configuration keys with the framework ID for which the configuration option is intended:</p><pre><code>application.name=Cool app
+application.mode=dev
+application.log=INFO
+ 
+# Configuration for gbo
+%gbo.application.log=DEBUG
+%gbo.db=mem
+ 
+# Configuration for src
+%scr.http.port=9500
+ 
+# Production configuration
+%production.http.port=80
+%production.application.log=INFO
+%production.application.mode=prod
+</code></pre><h2 id="anamecommandSettingtheframeworkIDfromthecommandlinea"><a name="command">Setting the framework ID from the command line</a></h2><p>You can specify the framework ID to use for a particular command directly from the command line. For example to run an application in production mode you can use:</p><pre><code>play run --%production
+</code></pre><p>with these lines defined in the <code>application.conf</code> file:</p><pre><code>application.mode=dev
+%production.application.mode=prod
+</code></pre><p>It should be compatible with all commands using the framework ID information. The default ID is still defined using the <code>play id</code> command.</p><p>By the way, <code>play test</code> is then equivalent to:</p><pre><code>play run --%test
+</code></pre><p class="note"><b>Continuing the discussion</b><br/> <br/>Now we shall move on to <span class="next"><a href="production.html">Production deployment</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>Play manual - Security Guide</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="SecurityGuide">Security Guide</h1><p>The Play framework is designed with security in mind &#8211; but it is impossible to prevent developers using the framework to mess up and open holes. The guide describes the common security issues in web applications and how to avoid them in Play applications.</p><h2 id="anamesessionsSessionsa"><a name="sessions">Sessions</a></h2><p>Often you need to keep information associated with a user, in particular the logged-in status. Without a session, the user would need to pass credentials with each request.</p><p>That’s what sessions are for: a set of cookies stored in the user’s browser that identify him or her to the web site, and provide other information your web application may choose to store there rather than in the data layer; for example the language.</p><h3 id="Keepyoursecretsecret">Keep your secret… secret</h3><p>The session is a hash of key/values, signed but not encrypted. That means that as long as your secret is safe, it is not possible for a third-party to forge sessions.</p><p>The secret is stored in <code>conf/application.conf</code>. It is very important to keep it private: do not commit it in a public repository, and when you install an application written by someone else change the secret key to your own. You can do that with the command <code>play secret</code>.</p><h3 id="Dontstorecriticaldata">Don’t store critical data</h3><p>However, since it is not encrypted, you should not store critical data in the session. It can be seen by looking at the user cookie, by sniffing the connection on a local network or over wifi.</p><p>The session is stored in a cookie, and cookies are limited to 4 KB. In addition to this limit, only strings can be stored.</p><h2 id="anamexssCrossSiteScriptinga"><a name="xss">Cross-Site Scripting</a></h2><p>Cross-site scripting is one of the most common vulnerabilities in web applications. It consists of injecting malicious JavaScript into web pages using forms that your application provides.</p><p>Let’s say you’re writing a blog, and anyone can add a comment. If you blindly include what commenters have written into your HTML page, you’re opening your site to attacks. It can be:</p><ul><li>Show a popup to your visitors</li><li>Redirect your visitors to a site controlled by the attacker</li><li>Steal information supposed to be visible only to the current user, and send it back to the attacker’s site</li></ul><p>Consequently it is very important to be protected from those attacks.</p><p>Play’s template engine automatically escapes strings. If you really need to insert unescaped HTML in your templates, you can do so using the <a href="javaextensions.html#raw">raw()</a> Java extension on the string. But if the string comes from a user input, you need to make sure it is sanitized first.</p><p>When sanitizing user inputs, always prefer whitelisting (only allow a list of safe tags) to blacklisting (forbid a list of unsafe tags and allow all the rest).</p><p><a href="http://en.wikipedia.org/wiki/Cross-site_scripting">More on cross-site scripting</a></p><h2 id="anamesqlSQLInjectiona"><a name="sql">SQL Injection</a></h2><p>SQL injection is an exploit consisting in using user input to execute a SQL query that was not intended by the developer. This can be used to destroy data, or to get access to data that shouldn’t be visible to the current user.</p><p><img border="0" src="http://imgs.xkcd.com/comics/exploits_of_a_mom.png"/></p><p>When you are using high level &#8220;find&#8221; methods, you should be covered against SQL injection. When you build your own queries manually, you need to be careful not to concatenate strings with <code>+</code> but use <code>?</code> placeholders.</p><p>This is good:</p><pre><code>createQuery("SELECT * from Stuff WHERE type= ?1").setParameter(1, theType);
+</code></pre><p>This is NOT:</p><pre><code>createQuery("SELECT * from Stuff WHERE type=" + theType);
+</code></pre><h2 id="anamecsrfCrossSiteRequestForgerya"><a name="csrf">Cross-Site Request Forgery</a></h2><p>The CSRF attack can be really problematic in web applications:</p><blockquote><p>This attack method works by including malicious code or a link in a page that accesses a web application that the user is believed to have authenticated. If the session for that web application has not timed out, an attacker may execute unauthorized commands.</p></blockquote><p>To prevent this attack, the first thing to do is to use GET and POST methods appropriately. That means that only the POST method should be used to change the application’s state.</p><p>For POST requests the only way to secure critical actions properly is to issue an authenticity token. Play now has a built-in helper to handle that:</p><ul><li>a <code>checkAuthenticity()</code> method available in controllers, that checks for a valid authenticity token in the request parameters and sends a forbidden response if something is bad.</li><li><code>session.getAuthenticityToken()</code> generates an authenticity token only valid for the current session.</li><li><code>#{authenticityToken /}</code> creates a hidden input field that you can add to any form.</li></ul><p>So for example:</p><pre><code>public static destroyMyAccount() {
+    checkAuthenticity();
+    …
+}
+</code></pre><p>Will only work when called from a form including a proper authenticity token:</p><pre><code>&lt;form method="post" action="/account/destroy">
+    #{authenticityToken /}
+    &lt;input type="submit" value="destroy my account">
+&lt;/form>
+</code></pre><p>For POST requests, Play’s <a href="tags.html#form">form tag</a> automatically generates the authenticity token:</p><pre><code>#{form @destroyMyAccount()}
+    &lt;input type="submit" value="destroy my account">
+#{/form}
+</code></pre><p>You can of course add the <code>checkAuthenticity()</code> method call as a <a href="controllers.html#before">before filter</a> if you want to protect all actions of a hierarchy of controllers.</p><p><a href="http://en.wikipedia.org/wiki/Cross-site_request_forgery">More on cross-site request forgery</a></p><p class="note"><b>Continuing the discussion</b><br/> <br/>Next: <span class="next"><a href="modules.1.html">Play modules</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

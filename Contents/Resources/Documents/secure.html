@@ -1,0 +1,110 @@
+<html>
+    <head>
+        <title>Play manual - Secure module</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Securemodule">Secure module</h1><p>The simple <b>Secure</b> module helps you to set-up basic authentication and authorization management in your application. It provides a simple <code>controllers.Secure</code> controller that defines a set of interceptors that you can easily add to your own controllers using the <code>@With</code> annotation.</p><h2 id="anamesetupModulesetupa"><a name="setup">Module set-up</a></h2><h3 id="anameenableEnabletheSecuremodulefortheapplicationa"><a name="enable">Enable the Secure module for the application</a></h3><p>In the <code>/conf/dependencies.yml</code> file, enable the Secure module by adding a line after <code>require:</code></p><pre><code>require:
+    - play -> secure
+</code></pre><p>Then run the <code>play dependencies</code> command to add the module to your application.</p><h3 id="anameroutesImportdefaultSecureroutesa"><a name="routes">Import default Secure routes</a></h3><p>In the <code>conf/routes</code> file, import the default module routes by adding this line:</p><pre><code># Import Secure routes
+*      /                module:secure
+</code></pre><p class="note"><b>Note</b> that it’s not required to use the default routes file. You can also define your own routes, or mix the two.</p><h2 id="anamecontrollerProtectingacontrollera"><a name="controller">Protecting a controller</a></h2><p>To protect a controller you just have to annotate it using <code>@With</code>. For example:</p><pre><code>@With(Secure.class)
+public class Application extends Controller {
+    
+    public static void index() {
+        render();
+    }
+}
+</code></pre><p>This controller will be automatically protected with the default authentication page.</p><h2 id="anamecustomCustomizingtheauthenticationmechanisma"><a name="custom">Customizing the authentication mechanism</a></h2><p>By default, the login page will accept any login/password. To customize it your application has to provide a <b>Security</b> provider. Just create a class in the <code>controllers</code> package that extends the <code>controllers.Secure.Security</code> class. Then you can override the <code>authenticate(String username, String password)</code> method.</p><pre><code>package controllers;
+ 
+public class Security extends Secure.Security {
+    
+    static boolean authenticate(String username, String password) {
+        User user = User.find("byEmail", username).first();
+        return user != null &amp;&amp; user.password.equals(password);
+    }
+}
+</code></pre><p class="note"><b>Note</b> that you can also override other methods to customize how the application should react to authentication events (onAuthenticated, onDisconnected).</p><h2 id="anameuserRetrievingtheconnectedusera"><a name="user">Retrieving the connected user</a></h2><p>From your application code, you can reuse the Security helper that you’ve just created to retrieve the connected user.</p><pre><code>@With(Secure.class)
+public class Application extends Controller {
+    
+    public static void index() {
+        String user = Security.connected();
+        render(user);
+    }
+}
+</code></pre><h2 id="anameauthAddingauthorizationchecksa"><a name="auth">Adding authorization checks</a></h2><h3 id="anameauthcontrollerControllerannotationa"><a name="authcontroller">Controller annotation</a></h3><p>You can use the <code>@Check</code> annotation either on controller classes or action methods to tell the Secure module to check that the connected user has the required authorization to call this action.</p><p>For example, to restrict an action method to authorized users:</p><pre><code>@With(Secure.class)
+public class Application extends Controller { 
+   …
+   
+   @Check("administrator")
+   public static void delete(Long id) {
+       …
+   }
+}
+</code></pre><p>To restrict all of the action methods in one controller, use the <code>@Check</code> annotation either on the controller class:</p><pre><code>@With(Secure.class)
+@Check("administrator")
+public class Application extends Controller { 
+   …
+   
+   public static void delete(Long id) {
+       …
+   }
+   
+   public static void edit(Long id) {
+       …
+   }
+}
+</code></pre><p>By default the secure module will always authorize all checks. You have to customize by overriding one more method in your <code>Security</code> class.</p><pre><code>package controllers;
+ 
+public class Security extends Secure.Security {
+    …
+    
+    static boolean check(String profile) {
+        User user = User.find("byEmail", connected()).first();
+        if ("administrator".equals(profile)) {
+            return user.admin;
+        }
+        else {
+            return false;
+        }
+    }    
+}
+</code></pre><h3 id="anameauthtagTemplatetaga"><a name="authtag">Template tag</a></h3><p>You can also use the <code>secure.check</code> tag for authorization checks in templates. This is useful to conditionally display user-interface controls for operations that are protected by controller annotations. For example:</p><pre><code>#{secure.check "administrator"}
+    &lt;a href="@{delete(item.id)}">Delete&lt;/a>
+#{/secure.check}
+</code></pre><p>The tag only renders its body for authorised users, so the ‘Delete’ link is only displayed when the user is authorised to execute the <code>delete</code> controller action.</p><h2 id="anamecommandsCommandsa"><a name="commands">Commands</a></h2><p>The Secure module provides a <code>play secure:override</code> that you can use to override the log in page, so you can customize it for your application. This works by copying the corresponding file from the module to a file in your application that will be used instead.</p><p>You can abbreviate <code>play secure:override</code> to <code>play secure:ov</code>.</p><h3 id="anamecssCSSoverridea"><a name="css">CSS override</a></h3><p>Use the <code>play secure:override --css</code> command to copy a CSS file to your application that you can edit to customise the log in page look and feel.</p><h3 id="anameloginLogintemplateoverridea"><a name="login">Log in template override</a></h3><p>Use the <code>play secure:override --login</code> command to copy a log in page view template to your application that overrides the default log in page template.</p><h3 id="anamelayoutMainlayoutoverridea"><a name="layout">Main layout override</a></h3><p>Use the <code>play secure:override --layout</code> command to copy a main layout template to your application that overrides the layout used by the log in page.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

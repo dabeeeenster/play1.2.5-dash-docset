@@ -1,0 +1,65 @@
+<html>
+    <head>
+        <title>Play manual - Play 1.0.2 -- Release notes</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Play1.0.2Releasenotes">Play 1.0.2 &#8212; Release notes</h1><p><b>Play 1.0.2</b> is a maintenance release of the Play 1.0 branch. The major new features are the support for the module repository and built-in protection against CSRF attacks. It also fixes a lot of small bugs.</p><p class="note"><b>Play 1.0.2</b> is a maintenance release and is fully compatible with the 1.0 series. If you encounter any problems please ask us on the <a href="http://groups.google.com/group/play-framework">Google Group</a>.</p><p>You can read about the fixed bugs on the <a href="http://www.playframework.org/roadmap/1.0.2">1.0.2 road map page</a>. The most important changes are highlighted on this page.</p><h2 id="aModulerepositorya"><a>Module repository</a></h2><p>The module repository’s goal is to centralize all contributed modules for the Play framework, and allow easy installation. The new module-related commands are:</p><ul><li><code>play list-modules</code>, to list the repository’s contents </li><li><code>play install</code>, to install a version of a module locally</li><li><code>play new-module</code>, to create a new module skeleton </li><li><code>play build-module</code>, to package a module and publish it to the repository.</li></ul><p>Also, you will see that almost all modules have been deleted. Only a bunch of ‘core’ modules are directly available: testrunner, docviewer, crud and secure.</p><p>The other modules are now optional. So if you want for example to install the GWT support, just type <code>play install gwt</code>, and you will get the latest version of the module.</p><p>Why have we moved modules? Because we need to focus on the core framework to have a simple project to manage. Also, as many people wanted to contributed modules, it is easier to do it this way: each module is a standalone project with a dedicated maintainer. So please, if you want to report a bug on a specific module, just use its project homepage and its dedicated bug tracker.</p><p>As an immediate benefit, the lifecycle of modules is no more tied to the framework lifecycle. A module can be released more often than the framework itself. And finally, because the framework does not contain optional modules anymore, the Play distribution size has been halved.</p><p>Read more about the modules repository on <a href="modules.1.html">this dedicated page</a>.</p><h2 id="aBuiltinCrossSiteRequestForgeryprotectiona"><a>Built-in Cross-Site Request Forgery protection</a></h2><p>CSRF attacks can be really problematic in web applications.</p><blockquote><p>This attack method works by including malicious code or a link in a page that accesses a web application that the user is believed to have authenticated. If the session for that web application has not timed out, an attacker may execute unauthorized commands.</p></blockquote><p>To prevent this attack, the first thing to do is to use GET and POST method appropriately. That means that only POST methods must be used to run an interaction that can change the application’s state.</p><p>For POST requests, the only way to secure critical actions properly is to issue an authenticity token. Play 1.0.2 now has a built-in helper to handle that:</p><ul><li>a new <code>checkAuthenticity()</code> method available in controllers, that checks for a valid authenticity token in the request parameters and sends a forbidden response if something is bad</li><li><code>session.getAuthenticityToken()</code> generates an authenticity token that is only valid for the current session</li><li><code>#{authenticityToken /}</code> creates an hidden input field that you can add to any form.</li></ul><p>So for example:</p><pre><code>public static destroyMyAccount() {
+    checkAuthenticity();
+    …
+}
+</code></pre><p>Will only work when called from a form including a proper authenticity token:</p><pre><code>#{form @ destroyMyAccount()}
+    #{authenticityToken /}
+    &lt;input type="submit" value="destroy my account">
+#{/form}
+</code></pre><p>You can of course add this as a before filter if you want to protect all actions of a hierarchy of controllers. Read more in the <a href="security.html">Security Guide</a>.</p><h2 id="aHEADmethodsupportedbydefaulta"><a>HEAD method supported by default</a></h2><p>Play now responds automatically to HEAD requests if there is an existing route for the GET method. This is because it is requested by the HTTP RFC that any resource respond to HEAD request as well.</p><p><a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html</a> </p><blockquote><p>The HEAD method is identical to GET except that the server MUST NOT return a message-body in the response. The metainformation contained in the HTTP headers in response to a HEAD request SHOULD be identical to the information sent in response to a GET request. This method can be used for obtaining metainformation about the entity implied by the request without transferring the entity-body itself. This method is often used for testing hypertext links for validity, accessibility, and recent modification.</p></blockquote><p>So any HEAD request will invoke your action method, but the response content will not be sent to the client. You can of course specialize it by adding a custom route to respond to HEAD requests with your routes file. For example:</p><pre><code>GET     /orders/{id}         Orders.show
+HEAD    /orders/{id}         Orders.showHead
+</code></pre><h2 id="aNewsampleapplicationzencontacta"><a>New sample application, ‘zencontact’</a></h2><p>A new sample, that is a port of a <a href="http://blog.zenika.com/index.php?post/2009/03/10/Concours-Développer-une-application-web-en-Wicket3">Wicket-based contact management application</a>. There is also a Scala version of this application available in the Scala module package, for those interested.</p><p><img border="0" src="images/zencontact"/></p><h2 id="aBettersupportforapplicationserverdeploymenta"><a>Better support for application server deployment</a></h2><p>We have tested the deployment of a Play generated WAR archive on several application servers. You can check the current <a href="deployment.html">compatibility matrix</a>.</p><table><tr><th>JBoss 4.2.x </th><th>JBoss 5.x </th><th>JBoss 6M2 </th><th>Glasshfish v3 </th><th>IBM Websphere 6.1 </th><th>IBM Websphere 7 </th><th>Geronimo 2.x </th><th>Tomcat 6.x </th><th>Jetty 7.x </th><th>Resin 4.0.5 </th></tr><tr><td>✓ </td><td>✓ </td><td>✓ </td><td>✓ </td><td>✓ </td><td>✓ </td><td>✓ </td><td>✓ </td><td> ✓ </td><td>✓  </td></tr></table><h2 id="aNewfeaturesforreversedactionintemplatesa"><a>New features for reversed action in templates</a></h2><p>The <code>@@</code> syntax, that allow to reverse an action to an <b>absolute</b> URL, is now available in tag parameters. For example:</p><pre><code>#{form @@save()}
+…
+#{/}
+</code></pre><p>It is very useful if you use the template engine to generate stuff like e-mail, in which you need to express URL in an absolute fashion.</p><p>Also, binding complex objects in now supported. So for example, with this action:</p><pre><code>public static void search(SearchParams params) {
+    …
+}
+</code></pre><p>SearchParams, being:</p><pre><code>public class SearchParams {
+    public String keywords;
+    public String mode;
+}
+</code></pre><p>You can use in a template, something like:</p><pre><code>@{search(params)}
+</code></pre><p>That would generate a URL containing several values in the queryString, like:</p><pre><code>/search?params.keywords=xxxx&amp;params.mode=AND
+</code></pre><h2 id="aAnewcommandtogeneratetheapplicationJavadoca"><a>A new command to generate the application Javadoc</a></h2><p>Now you can generate the <b>Javadoc</b> for your project easily, using:</p><pre><code>play javadoc 
+</code></pre><p>It generates the Javadoc API documentation for your project and its modules.</p><h2 id="aAnevenbetterEclipseplugininthisreleasea"><a>An even better Eclipse plugin in this release</a></h2><p>The Eclipse plugin now has several new features:</p><ul><li>Advanced route file editor, with content assist, missing action detection, and hyperlinks</li><li>Advanced template files editor, with some content assist, and hyperlinks</li><li>Wizard to create new Controllers, Models and Templates</li><li>Integrated test runner (using an embedded web browser)</li></ul><p><img border="0" src="images/route-completion"/></p><p><img border="0" src="images/eclipse-tests"/></p><p>To install this plugin, copy the JAR file from <code>$PLAY_HOME/support/eclipse</code> to <code>$ECLIPSE_HOME/dropins</code>.</p><p class="note">Next release: <span class="next"><a href="releasenotes-1.0.3.html">Play 1.0.3 release notes</a></span></p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

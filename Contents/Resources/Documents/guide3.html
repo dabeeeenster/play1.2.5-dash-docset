@@ -1,0 +1,270 @@
+<html>
+    <head>
+        <title>Play manual - Building the first screen</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Buildingthefirstscreen">Building the first screen</h1><p>Now that we have built a first data model, it’s time to start to create the first page of the application. This page will just show the most recent posts, as well as a list of older posts.</p><p>Here is a mock-up of what we want to achieve:</p><p><img border="0" src="images/guide-mock1"/></p><h2 id="aBootstrappingwithdefaultdataa"><a>Bootstrapping with default data</a></h2><p>In fact, before coding the first screen we need one more thing. Working on a web application without test data is not fun. You can’t even test what you’re doing. But because we haven’t developed the contribution screens yet, we can’t populate the blog with posts ourselves. </p><p>One way to inject default data into the blog is to load a fixture file at application load time. To do that we will create a Bootstrap Job. A Play job is something that executes itself outside of any HTTP request, for example at the application start or at specific interval using a CRON job.</p><p>Let’s create the <code>/yabe/app/Bootstrap.java</code> job that will load a set of default data using <code>Fixtures</code>:</p><pre><code>import play.*;
+import play.jobs.*;
+import play.test.*;
+ 
+import models.*;
+ 
+@OnApplicationStart
+public class Bootstrap extends Job {
+ 
+    public void doJob() {
+        // Check if the database is empty
+        if(User.count() == 0) {
+            Fixtures.loadModels("initial-data.yml");
+        }
+    }
+ 
+}
+</code></pre><p>We have annotated this Job with the <code>@OnApplicationStart</code> annotation to tell Play that we want to run this job synchronously at application start-up.</p><p class="note">In fact this job will be run differently in DEV or PROD modes. In DEV mode, Play waits for a first request to start. So this job will be executed synchronously at the first request. That way, if the job fails, you will get the error message in your browser. In PROD mode however, the job will be executed at application start-up (synchrously with the <code>play run</code> command) and will prevent the application from starting in case of an error.</p><p>You have to create an <code>initial-data.yml</code> in the <code>yabe/conf/</code> directory. You can of course reuse the <code>data.yml</code> content that we just used for tests previously.</p><p>Now run the application using <code>play run</code> and display the page <a href="http://localhost:9000/">http://localhost:9000/</a> in the browser.</p><h2 id="aThebloghomepagea"><a>The blog home page</a></h2><p>This time, we can really start to code the home page.</p><p>Do you remember how the first page is displayed? First the routes file specifies that the <code>/</code> URL will invoke the <code>controllers.Application.index()</code> action method. Then this method calls <code>render()</code> and executes the <code>/yabe/app/views/Application/index.html</code> template.</p><p>We will keep these components but add code to them to load the posts list and display them.</p><p>Open the <code>/yabe/app/controllers/Application.java</code> controller and modify the <code>index()</code> action to load the posts list, as is:</p><pre><code>package controllers;
+ 
+import java.util.*;
+ 
+import play.*;
+import play.mvc.*;
+ 
+import models.*;
+ 
+public class Application extends Controller {
+ 
+    public static void index() {
+        Post frontPost = Post.find("order by postedAt desc").first();
+        List&lt;Post> olderPosts = Post.find(
+            "order by postedAt desc"
+        ).from(1).fetch(10);
+        render(frontPost, olderPosts);
+    }
+ 
+}
+</code></pre><p>Can you see how we pass objects to the <code>render</code> method? It will allow us to access them from the template using the same name. In this case, the variables <code>frontPost</code> and <code>olderPosts</code> will be available in the template.</p><p>Open the <code>/yabe/app/views/Application/index.html</code> and modify it to display these objects:</p><pre><code>#{extends 'main.html' /}
+#{set title:'Home' /}
+ 
+#{if frontPost}
+    &lt;div class="post">
+        &lt;h2 class="post-title">
+            &lt;a href="#">${frontPost.title}&lt;/a>
+        &lt;/h2>
+        &lt;div class="post-metadata">
+            &lt;span class="post-author">by ${frontPost.author.fullname}&lt;/span>
+            &lt;span class="post-date">${frontPost.postedAt.format('MMM dd')}&lt;/span>
+            &lt;span class="post-comments">
+                &amp;nbsp;|&amp;nbsp; 
+                ${frontPost.comments.size() ?: 'no'} 
+                comment${frontPost.comments.size().pluralize()}
+                #{if frontPost.comments}
+                    , latest by ${frontPost.comments[-1].author}
+                #{/if}
+            &lt;/span>
+        &lt;/div>
+        &lt;div class="post-content">
+            ${frontPost.content.nl2br()}
+        &lt;/div>
+    &lt;/div>
+    
+    #{if olderPosts}
+        &lt;div class="older-posts">    
+            &lt;h3>Older posts &lt;span class="from">from this blog&lt;/span>&lt;/h3>
+        
+            #{list items:olderPosts, as:'oldPost'}
+                &lt;div class="post">
+                    &lt;h2 class="post-title">
+                        &lt;a href="#">${oldPost.title}&lt;/a>
+                    &lt;/h2>
+                    &lt;div class="post-metadata">
+                        &lt;span class="post-author">
+                            by ${oldPost.author.fullname}
+                        &lt;/span>
+                        &lt;span class="post-date">
+                            ${oldPost.postedAt.format('dd MMM yy')}
+                        &lt;/span>
+                        &lt;div class="post-comments">
+                            ${oldPost.comments.size() ?: 'no'} 
+                            comment${oldPost.comments.size().pluralize()}
+                            #{if oldPost.comments}
+                                - latest by ${oldPost.comments[-1].author}
+                            #{/if}
+                        &lt;/div>
+                    &lt;/div>
+                &lt;/div>
+            #{/list}
+        &lt;/div>
+        
+    #{/if}
+    
+#{/if}
+ 
+#{else}
+    &lt;div class="empty">
+        There is currently nothing to read here.
+    &lt;/div>
+#{/else}
+</code></pre><p>You can read about how this template works in the <a href="templates.html">Templates chapter</a>. Basically, it allows you to access your Java objects dynamically. Under the hood we use Groovy. Most of the pretty constructs you see (like the <code>?:</code> operator) come from Groovy. But you don’t really need to learn Groovy to write Play templates. If you’re already familiar with another template language like JSP with JSTL you won’t be lost.</p><p>OK, now refresh the blog home page.</p><p><img border="0" src="images/guide3-0"/></p><p>Not pretty but it works!</p><p>However you can see we have already started to duplicate code. Because we will display posts in several ways (full, full with comment, teaser) we should create something like a function that we could call from several templates. This is exactly what a Play tag does!</p><p>To create a tag, just create the new <code>/yabe/app/views/tags/display.html</code> file. A tag is just another template. It has parameters (like a function). The <code>#{display /}</code> tag will have two parameters: the Post object to display and the display mode which will be one of <code>home</code>, <code>teaser</code> or <code>full</code>.</p><pre><code>*{ Display a post in one of these modes: 'full', 'home' or 'teaser' }*
+ 
+&lt;div class="post ${_as == 'teaser' ? 'teaser' : ''}">
+    &lt;h2 class="post-title">
+        &lt;a href="#">${_post.title}&lt;/a>
+    &lt;/h2>
+    &lt;div class="post-metadata">
+        &lt;span class="post-author">by ${_post.author.fullname}&lt;/span>,
+        &lt;span class="post-date">${_post.postedAt.format('dd MMM yy')}&lt;/span>
+        #{if _as != 'full'}
+            &lt;span class="post-comments">
+                &amp;nbsp;|&amp;nbsp; ${_post.comments.size() ?: 'no'} 
+                comment${_post.comments.size().pluralize()}
+                #{if _post.comments}
+                    , latest by ${_post.comments[-1].author}
+                #{/if}
+            &lt;/span>
+        #{/if}
+    &lt;/div>
+    #{if _as != 'teaser'}
+        &lt;div class="post-content">
+            &lt;div class="about">Detail: &lt;/div>
+            ${_post.content.nl2br()}
+        &lt;/div>
+    #{/if}
+&lt;/div>
+ 
+#{if _as == 'full'}
+    &lt;div class="comments">
+        &lt;h3>
+            ${_post.comments.size() ?: 'no'} 
+            comment${_post.comments.size().pluralize()}
+        &lt;/h3>
+        
+        #{list items:_post.comments, as:'comment'}
+            &lt;div class="comment">
+                &lt;div class="comment-metadata">
+                    &lt;span class="comment-author">by ${comment.author},&lt;/span>
+                    &lt;span class="comment-date">
+                        ${comment.postedAt.format('dd MMM yy')}
+                    &lt;/span>
+                &lt;/div>
+                &lt;div class="comment-content">
+                    &lt;div class="about">Detail: &lt;/div>
+                    ${comment.content.escape().nl2br()}
+                &lt;/div>
+            &lt;/div>
+        #{/list}
+        
+    &lt;/div>
+#{/if}
+</code></pre><p>Now using this tag we can rewrite the home page without code duplication:</p><pre><code>#{extends 'main.html' /}
+#{set title:'Home' /}
+ 
+#{if frontPost}
+    
+    #{display post:frontPost, as:'home' /}
+    
+    #{if olderPosts.size()}
+    
+        &lt;div class="older-posts">
+            &lt;h3>Older posts &lt;span class="from">from this blog&lt;/span>&lt;/h3>
+        
+            #{list items:olderPosts, as:'oldPost'}
+                #{display post:oldPost, as:'teaser' /}
+            #{/list}
+        &lt;/div>
+        
+    #{/if}
+    
+#{/if}
+ 
+#{else}
+    &lt;div class="empty">
+        There is currently nothing to read here.
+    &lt;/div>
+#{/else}
+</code></pre><p>Reload the page and check that all is fine.</p><h2 id="aImprovingthelayouta"><a>Improving the layout</a></h2><p>As you can see, the <code>index.html</code> template extends <code>main.html</code>. Because we want to provide a common layout for all blog pages, with the blog title and authentication links, we need to modify this file.</p><p>Edit the <code>/yabe/app/views/main.html</code> file:</p><pre><code>&lt;!DOCTYPE html >
+&lt;html>
+    &lt;head>
+        &lt;title>#{get 'title' /}&lt;/title>		
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        &lt;link rel="stylesheet" type="text/css" media="screen" 
+            href="@{'/public/stylesheets/main.css'}" />
+        &lt;link rel="shortcut icon" type="image/png" 
+            href="@{'/public/images/favicon.png'}" />
+    &lt;/head>
+    &lt;body>
+        
+        &lt;div id="header">
+            &lt;div id="logo">
+                yabe.
+            &lt;/div>
+            &lt;ul id="tools">
+                &lt;li>
+                    &lt;a href="#">Log in to write something&lt;/a>
+                &lt;/li>
+            &lt;/ul>
+            &lt;div id="title">
+                &lt;span class="about">About this blog&lt;/span>
+                &lt;h1>&lt;a href="#">${blogTitle}&lt;/a>&lt;/h1>
+                &lt;h2>${blogBaseline}&lt;/h2>
+            &lt;/div>
+        &lt;/div>
+        
+        &lt;div id="main">
+            #{doLayout /} 
+        &lt;/div>
+        
+        &lt;p id="footer">
+            Yabe is a (not that) powerful blog engine built with the 
+            &lt;a href="http://www.playframework.org">Play framework&lt;/a>
+            as a tutorial application.
+        &lt;/p>
+        
+    &lt;/body>
+&lt;/html>
+</code></pre><p>Refresh and check the result. It seems to work, except that the <code>blogTitle</code> and the <code>blogBaseLine</code> variables are not displayed. This is because we didn’t pass them to the <code>render(…)</code> call. Of course we could add them to the <code>render()</code> call in the <code>index</code> action. But because the <code>main.html</code> file will be used as main template for all application actions, we don’t want to add them every time.</p><p>One way to execute the same code for each action of a controller (or a hierarchy of controllers) is to define a <code>@Before</code> interceptor. </p><p>Let’s add the <code>addDefaults()</code> method to the Application controller:</p><pre><code>@Before
+static void addDefaults() {
+    renderArgs.put("blogTitle", Play.configuration.getProperty("blog.title"));
+    renderArgs.put("blogBaseline", Play.configuration.getProperty("blog.baseline"));
+}
+</code></pre><p class="note">You will need to import <code>play.Play</code> in the <code>Application.java</code> file.</p><p>All variables added to the <code>renderArgs</code> scope will be available from the templates. And you can see that the method reads the variable’s values from the <code>Play.configuration</code> object. This object contains all configuration keys from the <code>/yabe/conf/application.conf</code> file.</p><p>Add these two keys to the configuration file:</p><pre><code># Blog engine configuration
+# ~~~~~
+blog.title=Yet another blog
+blog.baseline=We will write about nothing
+</code></pre><p>Reload the home page and check that it works!</p><p><img border="0" src="images/guide3-1"/></p><h2 id="aAddingsomestylea"><a>Adding some style</a></h2><p>Now the blog home page is almost done, but it’s not very pretty. We’ll add some style to make it shinier. As you have seen, the main template file main.html includes the <code>/public/stylesheets/main.css</code> stylesheet. We’ll keep it but add more style rules to it.</p><p>You can <a href="files/main.css">download it here</a>, and copy it to the <code>/public/stylesheets/main.css</code> file.</p><p>Refresh the home page and you should now see a styled page.</p><p><img border="0" src="images/guide3-2"/></p><h2 id="aCommityourworka"><a>Commit your work</a></h2><p>The blog home page is now finished. As usual we can commit this blog version to bazaar:</p><pre><code>$ bzr st
+$ bzr add
+$ bzr commit -m "Home page"
+</code></pre><p class="note">Next: <span class="next"><a href="guide4.html">The comments page</a></span>. </p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

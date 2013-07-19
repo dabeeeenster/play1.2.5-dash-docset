@@ -1,0 +1,265 @@
+<html>
+    <head>
+        <title>Play manual - Dependency management</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Dependencymanagement">Dependency management</h1><p>Play’s dependency management system allows you to express your application’s external dependencies in a single <code>dependencies.yml</code> file. </p><p>A Play application can have three kinds of dependencies:</p><ul><li>The Play framework itself, since a Play application always depends on the Play framework.</li><li>Any Java library, provided as <b>JAR</b> file installed in your application’s <code>lib/</code> directory.</li><li>A Play module (in fact an application fragment) installed in your application’s <code>modules/</code> directory.</li></ul><p>Once you have expressed these dependencies in your application’s <code>conf/dependencies.yml</code> file, Play will resolve, download and install all required dependencies.</p><h2 id="anameformatDependencyformata"><a name="format">Dependency format</a></h2><p>A dependency is described by an organisation a name and a revision number. In the <code>dependencies.yml</code> file you will write it like this:</p><pre><code>organisation -> name revision
+</code></pre><p>So, for instance version 1.0 of the <a href="http://www.playframework.org/modules/pdf">Play PDF module</a> is expressed like this:</p><pre><code>play -> pdf 1.0
+</code></pre><p>Sometimes the organisation name exactly matches the dependency name, as is the case for <a href="http://commons.apache.org/lang/">commons-lang</a>:</p><pre><code>commons-lang -> commons-lang 2.5
+</code></pre><p>In this case, you can omit the organisation from the dependency declaration:</p><pre><code>commons-lang 2.5
+</code></pre><h3 id="Dynamicrevisions">Dynamic revisions</h3><p>The revision can be fixed (1.2, for instance) or dynamic. A dynamic revision expresses a range of allowed revisions. </p><p>For example:</p><ul><li><code>[1.0,2.0]</code> matches all versions greater or equal to 1.0 and lower or equal to 2.0</li><li><code>[1.0,2.0[</code> matches all versions greater or equal to 1.0 and lower than 2.0</li><li><code>]1.0,2.0]</code> matches all versions greater than 1.0 and lower or equal to 2.0</li><li><code>]1.0,2.0[</code> matches all versions greater than 1.0 and lower than 2.0</li><li><code>[1.0,)</code> matches all versions greater or equal to 1.0</li><li><code>]1.0,)</code> matches all versions greater than 1.0</li><li><code>(,2.0]</code> matches all versions lower or equal to 2.0</li><li><code>(,2.0[</code> matches all versions lower than 2.0</li></ul><h2 id="anameymldependencies.ymla"><a name="yml">dependencies.yml</a></h2><p>When you create a new Play application, a <code>dependencies.yml</code> descriptor is automatically created in the <code>conf/</code> directory:</p><pre><code># Application dependencies
+    
+require:
+    - play 1.2
+</code></pre><p>The <code>require</code> section list all dependencies needed by your application. Here the new application only depends on <b>Play version 1.2</b>. But let’s say your application needs <a href="http://code.google.com/p/guava-libraries/">Google Guava</a>; you would have:</p><pre><code># Application dependencies
+    
+require:
+    - play 1.2
+    - com.google.guava -> guava r07
+</code></pre><h3 id="Theplaydependenciescommand">The ‘play dependencies’ command</h3><p>To ask Play to resolve, download and install the new dependencies, run <code>play dependencies</code>:</p><pre><code>$ play dependencies
+~        _            _ 
+~  _ __ | | __ _ _  _| |
+~ | '_ \| |/ _' | || |_|
+~ |  __/|_|\____|\__ (_)
+~ |_|            |__/   
+~
+~ play! 1.2, http://www.playframework.org
+~ framework ID is gbo
+~
+~ Resolving dependencies using ~/Documents/coco/conf/dependencies.yml,
+~
+~ 	com.google.guava->guava r07 (from mavenCentral)
+~ 	com.google.code.findbugs->jsr305 1.3.7 (from mavenCentral)
+~
+~ Downloading required dependencies,
+~
+~ 	downloaded http://repo1.maven.org/maven2/com/google/guava/guava/r07/guava-r07.jar
+~ 	downloaded http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/1.3.7/jsr305-1.3.7.jar
+~
+~ Installing resolved dependencies,
+~
+~ 	lib/guava-r07.jar
+~ 	lib/jsr305-1.3.7.jar
+~
+~ Done!
+~
+</code></pre><p>Now Play has downloaded two JARs (<b>guava-r07.jar</b>, <b>jsr305-1.3.7.jar</b>) from the central Maven repository, and installed them into the application <code>lib/</code> directory. </p><p>Why two jars, since we only declared one dependency? Because Google Guava has a transitive dependency. In fact this dependency is not really required and we would like to exclude it. </p><h3 id="Transitivedependencies">Transitive dependencies</h3><p>By default, any transitive dependencies are automatically retrieved. But there are several ways to exclude them if needed.</p><p>1. You can disable transitive dependencies for a particular dependency:</p><pre><code># Application dependencies
+    
+require:
+    - play 1.2
+    - com.google.guava -> guava r07:
+        transitive: false
+</code></pre><p>2. You can disable transitive dependencies for the whole project:</p><pre><code># Application dependencies
+    
+transitiveDependencies: false    
+    
+require:
+    - play 1.2
+    - com.google.guava -> guava r07
+</code></pre><p>3. You can exclude any specific dependency explicitely:</p><pre><code># Application dependencies
+    
+require:
+    - play 1.2
+    - com.google.guava -> guava r07:
+        exclude:
+            - com.google.code.findbugs -> *
+</code></pre><h3 id="Keeplibandmodulesdirectoryinsync">Keep lib/ and modules/ directory in sync</h3><p>Now if you run <code>play dependencies</code> again, the findbugs dependency will be omitted:</p><pre><code>$ play deps
+~        _            _ 
+~  _ __ | | __ _ _  _| |
+~ | '_ \| |/ _' | || |_|
+~ |  __/|_|\____|\__ (_)
+~ |_|            |__/   
+~
+~ play! 1.2, http://www.playframework.org
+~ framework ID is gbo
+~
+~ Resolving dependencies using ~/Documents/coco/conf/dependencies.yml,
+~
+~ 	com.google.guava->guava r07 (from mavenCentral)
+~
+~ Installing resolved dependencies,
+~
+~ 	lib/guava-r07.jar
+~
+~ ********************************************************************
+~ WARNING: Your lib/ and modules/ directories and not synced with 
+~ current dependencies (use --sync to automatically delete them)
+~
+~ 	Unknown: ~/Documents/coco/lib/jsr305-1.3.7.jar
+~ ********************************************************************
+~
+~ Done!
+~
+</code></pre><p>However the <b>jsr305-1.3.7.jar</b> artifact downloaded before is still present in the application <code>lib/</code> directory. </p><p>To keep the <code>lib/</code> and <code>modules/</code> directory synced with the dependency management system, you can specify the <code>--sync</code> command to the <code>dependencies</code> command:</p><pre><code>play dependencies --sync
+</code></pre><p>If you run this command again the unwanted <b>JAR</b> will be deleted.</p><p>When you deploy an application in production, you can reduce the size of its modules by removing module source code and documentation. You can do this by adding the <code>--forProd</code> option to the command:</p><pre><code>play dependencies --forProd
+</code></pre><p>This removes the <code>documentation/</code>, <code>src/</code>, <code>tmp/</code>, <code>*sample*/</code> and <code>*test*/</code> directories from each module.</p><h2 id="anameconflictsConflictresolutiona"><a name="conflicts">Conflict resolution</a></h2><p>Whenever two components need different revisions of the same dependency, the conflicts manager will choose one. The default is to keep the latest revision and to evict the others. </p><p>But there is an exception. When a core dependency of Play framework itself is involved in a conflict, the version available in <code>$PLAY/framework/lib</code> is preferred. For instance, Play depends on <code>commons-lang 2.5</code>. If your application requires <code>commons-lang 3.0</code>:</p><pre><code># Application dependencies
+    
+require:
+    - play 1.2
+    - com.google.guava -> guava r07:
+        transitive: false
+    - commons-lang 3.0
+</code></pre><p>Running <code>play dependencies</code> will evict <code>commons-lang 3.0</code> even if this version is newer:</p><pre><code>play dependencies
+~        _            _ 
+~  _ __ | | __ _ _  _| |
+~ | '_ \| |/ _' | || |_|
+~ |  __/|_|\____|\__ (_)
+~ |_|            |__/   
+~
+~ play! 1.2, http://www.playframework.org
+~ framework ID is gbo
+~
+~ Resolving dependencies using ~/Documents/coco/conf/dependencies.yml,
+~
+~ 	com.google.guava->guava r07 (from mavenCentral)
+~
+~ Some dependencies have been evicted,
+~
+~	commons-lang 3.0 is overriden by commons-lang 2.5
+~
+~ Installing resolved dependencies,
+~
+~ 	lib/guava-r07.jar
+~
+~ Done!
+~
+</code></pre><p>Also, note that dependencies already available in <code>$PLAY/framework/lib</code> will not be installed in your application’s <code>lib/</code> directory.</p><p>Sometimes you want to force a specific dependency version, either to override a core dependency or to choose another revision that the latest version available. </p><p>So you can specify the <code>force</code> option on any dependency:</p><pre><code># Application dependencies
+    
+require:
+    - play 1.2
+    - com.google.guava -> guava r07:
+        transitive: false
+    - commons-lang 3.0:
+        force: true
+</code></pre><h2 id="anamerepositoriesAddingnewrepositoriesa"><a name="repositories">Adding new repositories</a></h2><p>By default, Play will search for <b>JAR</b> dependencies in the <a href="http://repo1.maven.org/maven2/">central Maven repository</a>, and will search for <b>Play modules</b> in the <a href="http://www.playframework.org/modules">central Play modules repository</a>. </p><p>You can, of course, specify new custom repositories in the <code>repositories</code> section:</p><pre><code># Application dependencies
+    
+require:
+    - play 1.2
+    - com.google.guava -> guava r07:
+        transitive: false
+    - commons-lang 3.0:
+        force: true
+    - com.zenexity -> sso 1.0
+        
+# My custom repositories
+repositories:
+    
+    - zenexity:
+        type:       http
+        artifact:   "http://www.zenexity.com/repo/[module]-[revision].zip"
+        contains:
+            - com.zenexity -> *
+</code></pre><p>Using this configuration all dependencies of the <code>com.zenexity</code> organisation will be retrieved and downloaded from a remote HTTP server.</p><h3 id="Mavenrepositories">Maven repositories</h3><p>You can also add maven2-compatible repositories using the <code>iBiblio</code> type, like this:</p><pre><code># Application dependencies
+    
+require:
+    - play
+    - play -> scala 0.8
+    - org.jbpm -> jbpm-persistence-jpa 5.0.0:
+        exclude:
+            - javassist -> javassist *
+            - org.hibernate -> hibernate-annotations *
+            - javax.persistence -> persistence-api *
+repositories:
+    - jboss:
+        type: iBiblio
+        root: "http://repository.jboss.org/nexus/content/groups/public-jboss/"
+        contains:
+            - org.jbpm -> *
+            - org.drools -> *
+</code></pre><h3 id="Localrepositories">Local repositories</h3><p>Finally and probably foremost, you may want to define a repository that references local modules. With this scenario, dependencies work very much like <code>application.conf</code>’s module resolution (now deprecated).</p><p>So given the following folder structure,</p><pre><code>myplayapp/
+myfirstmodule/
+mysecondmodule/
+</code></pre><p>The following <code>myplayapp/conf/depencencies.yml</code> will achieve its goal.</p><pre><code># Application dependencies
+    
+require:
+    - play
+    - myfirstmodule -> myfirstmodule
+    - mysecondmodule -> mysecondmodule
+    
+repositories:
+    - My modules:
+        type:       local
+        artifact:   ${application.path}/../[module]
+        contains:
+            - myfirstmodule
+            - mysecondmodule
+</code></pre><p>Note: don&#8217;t forget to run <code>play dependencies myplayapp</code>.</p><h3 id="Customivysettings">Custom ivy settings</h3><p>Play is using Ivy under the hood. If you require a special configuration such as setting a proxy, basic authentication for an internal maven nexus repository, you can edit the ivysettings.xml file. It is located in the <code>.ivy2</code> folder in your home directory.</p><p>Example 1, you want Ivy to ignore checksums:</p><pre><code>&lt;!-- .ivy2/ivysettings.xml -->
+&lt;ivysettings>
+  &lt;property name="ivy.checksums" value=""/>
+&lt;/ivysettings>
+</code></pre><p>Example 2, you want to use basic authentication:</p><pre><code>&lt;!-- .ivy2/ivysettings.xml -->
+&lt;ivysettings>
+  &lt;credentials host="maven-repo.xxx" realm="Sonatype Nexus Repository Manager"
+    username="user" passwd="reallygreatpassword"/>
+&lt;/ivysettings>
+</code></pre><p>Example 3, reuse local maven repository and repository manager:</p><pre><code>&lt;!-- .ivy2/ivysettings.xml -->
+&lt;ivy-settings>
+  &lt;!-- path to local maven repo and default maven layout -->
+  &lt;property name="local-maven2-pattern" 
+    value="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[module]-[revision]" 
+    override="false" />
+ 
+  &lt;!-- set resolver chain as default -->
+  &lt;settings defaultResolver="main" />
+ 
+  &lt;!-- configure caches -->
+  &lt;caches repositoryCacheDir="${user.home}/.ivy2/cache">
+    &lt;!-- do not cache from local .m2-->
+    &lt;cache name="nocache" useOrigin="true" />
+    &lt;cache name="default" />
+  &lt;/caches>
+ 
+  &lt;resolvers>
+    &lt;chain name="main">
+      &lt;!-- as this is not cached, even changing SNAPSHOT dependencies 
+        are resolved correctly -->
+      &lt;filesystem name="local-maven-2" m2compatible="true" local="true" 
+        cache="nocache">
+        &lt;ivy pattern="${local-maven2-pattern}.pom" />
+        &lt;artifact pattern="${local-maven2-pattern}(-[classifier]).[ext]" />
+      &lt;/filesystem>
+      &lt;!-- use repository manager as proxy to maven-central
+        (and all other repositories)--> 
+      &lt;ibiblio name="repomanager" m2compatible="true"
+        root="http://your.repomanager.intra/path/to/repo" cache="default"/>
+    &lt;/chain>
+  &lt;/resolvers>
+&lt;/ivy-settings>
+</code></pre><p>There are many things you can configure: see the <a href="http://ant.apache.org/ivy/history/2.1.0/settings.html">Ivy settings documentation</a>.</p><h3 id="ClearingtheIvycache">Clearing the Ivy cache</h3><p>The Ivy cache can become corrupted, especially when using the <code>http</code> type in the repositories section of <code>conf/dependencies.yml</code>. If this happens, and dependency resolution does not work, you can clear the cache with the <code>--clearcache</code> option.</p><pre><code>$ play dependencies --clearcache
+</code></pre><p>This is equivalent to <code>rm -r ~/.ivy2/cache</code>.</p><p class="note"><b>Continuing the discussion</b></p><p>Next: <span class="next"><a href="evolutions.html">Database evolutions</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

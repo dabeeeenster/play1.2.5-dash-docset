@@ -1,0 +1,93 @@
+<html>
+    <head>
+        <title>Play manual - Use a cache</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Useacache">Use a cache</h1><p>To create high-performance systems, sometimes you need to cache data. Play has a cache library and will use <a href="http://www.danga.com/memcached/">Memcached</a> when used in a distributed environment.</p><p>If you don’t configure Memcached, Play will use a standalone cache that stores data in the JVM heap. Caching data in the JVM application breaks the ‘share nothing’ assumption made by Play: you can’t run your application on several servers, and expect the application to behave consistently. Each application instance will have a different copy of the data.</p><p>It is important to understand that the cache contract is clear: when you put data in a cache, you can’t expect that data to remain there forever. In fact you shouldn’t. A cache is fast, but values expire, and the cache generally exists only in memory (without persistent backup). </p><p>So the best way to use the cache is to repopulate it when it doesn’t have what you expect:</p><pre><code>public static void allProducts() {
+    List&lt;Product> products = Cache.get("products", List.class);
+    if(products == null) {
+        products = Product.findAll();
+        Cache.set("products", products, "30mn");
+    }
+    render(products);
+}
+</code></pre><h2 id="anameapiThecacheAPIa"><a name="api">The cache API</a></h2><p>The cache API is provided by the <code>play.cache.Cache</code> class. This class contains the set of methods to set, replace, and get data from the cache. Refer to the Memcached documentation to understand the exact behavior of each method.</p><p>Some examples:</p><pre><code>public static void showProduct(String id) {
+    Product product = Cache.get("product_" + id, Product.class);
+    if(product == null) {
+        product = Product.findById(id);
+        Cache.set("product_" + id, product, "30mn");
+    }
+    render(product);
+}
+ 
+public static void addProduct(String name, int price) {
+    Product product = new Product(name, price);
+    product.save();
+    showProduct(product.id);
+}
+ 
+public static void editProduct(String id, String name, int price) {
+    Product product = Product.findById(id);
+    product.name = name;
+    product.price = price;
+    Cache.set("product_" + id, product, "30mn");
+    showProduct(id);
+}
+ 
+public static void deleteProduct(String id) {
+    Product product = Product.findById(id);
+    product.delete();
+    Cache.delete("product_" + id);
+    allProducts();
+}
+</code></pre><p>Some methods start with the <code>safe</code> prefix &#8211; e.g. <code>safeDelete</code>, <code>safeSet</code>. The standard methods are non-blocking. That means that when you issue the call:</p><pre><code>Cache.delete("product_" + id);
+</code></pre><p>The <code>delete</code> method will return immediately and will not wait until the cached object is actually deleted. So if an error occurs &#8211; e.g. an IO error &#8211; the object may still be present.</p><p>When you need to make sure that the object is deleted before continuing, you can use the <code>safeDelete</code> method:</p><pre><code>Cache.safeDelete("product_" + id);
+</code></pre><p>This method is blocking and returns a boolean value indicating whether the object has been deleted or not. So the full pattern that ensures an item is deleted from the cache is:</p><pre><code>if(!Cache.safeDelete("product_" + id)) {
+    throw new Exception("Oops, the product has not been removed from the cache");
+}
+...
+</code></pre><p>Note that those being blocking calls, <code>safe</code> methods will slow down your application. So use them only when needed.</p><p>Also note that when specifying <code>expiration == "0s"</code> (zero seconds) the actual expiration-time may vary between different cache implementations.</p><h2 id="anamesessionDontusetheSessionasacachea"><a name="session">Don’t use the Session as a cache!</a></h2><p>If you come from a framework that uses an in-memory Session implementation, you may be frustrated to see that Play allows only a small set of String data to be saved in the HTTP Session. But this is much better because a session is not the place to cache your application data! </p><p>So if you have been accustomed to doing things similar to:</p><pre><code>httpServletRequest.getSession().put("userProducts", products);
+...
+// and then in subsequent requests
+products = (List&lt;Product>)httpServletRequest.getSession().get("userProducts");
+</code></pre><p>In Play you achieve the same effect a little differently. We think it’s a better approach:</p><pre><code>Cache.set(session.getId(), products);
+...
+// and then in subsequent requests
+List&lt;Product> products = Cache.get(session.getId(), List.class)
+</code></pre><p>Here we have used a unique UUID to keep unique information in the Cache for each user. Remember that, unlike a session object, the cache is not bound to any particular User!</p><h2 id="anamememcachedConfigurememcacheda"><a name="memcached">Configure memcached</a></h2><p>When you want to enable a real Memcached implementation, enable Memcached  with the <a href="configuration.html#memcached">memcached configuration</a> and define the daemon address in the <a href="configuration.html#memcached.host">memcached.host configuration</a>.</p><p class="note"><b>Continuing the discussion</b><br/> <br/>Learn about <span class="next"><a href="emails.html">Sending emails</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

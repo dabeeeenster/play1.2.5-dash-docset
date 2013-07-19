@@ -1,0 +1,42 @@
+<html>
+    <head>
+        <title>Play manual - Frequently Asked Questions</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="FrequentlyAskedQuestions">Frequently Asked Questions</h1><h2 id="aWheredoIaskquestionsthatarenotansweredherea"><a>Where do I ask questions that are not answered here?</a></h2><p>The <a href="http://www.playframework.org/community">Community</a> page links to various places where you can read and post about Play. In general, the best place to ask questions is the <a href="http://groups.google.com/group/play-framework">play-framework Google Group</a>.</p><h2 id="aHowdoesPlaycomparetoframeworkXa"><a>How does Play compare to framework X?</a></h2><p>Nowadays, you have a very large number of choices for developing web applications. Play being a Java web application framework, let’s compare it to other Java frameworks. Play is built for a ‘share nothing’ architecture (think about it as a stateless framework), so it’s very different from all these Java stateful and components based frameworks like Seam, Tapestry or Wicket. It’s closer to Spring MVC or Struts (or Struts 2), but way more opinionated.</p><p>However Play is a unique Java framework. It does not really rely on the so-called Java Enterprise standards. It uses Java, but tries to bring all the good things from the frameworks based on scripting languages like Ruby On Rails, Django, Pylons, Symfony, Grails and Cake PHP to the Java world. We really tried to get the best out of the Java platform without getting the pain of traditional Java web development: a slow development cycle, too much abstraction and too much configuration.</p><h2 id="aWhydontyourenametheplaypackagetoorg.playframeworka"><a>Why don’t you rename the ‘play’ package to ‘org.playframework’?!</a></h2><p>You are missing the point. Play is not another library that you add to your Servlet container. It’s really a full stack Java framework that runs your application stand-alone. The Java package naming conventions exist to avoid name clashes when you use several different libraries from several vendors. But believe us, you will never put the <code>play.jar</code> library in your own project. This is not the way Play works. Play <b>is the platform</b>. Don’t worry about that.</p><h2 id="aWhydoIneedPythonIwouldpreferMavena"><a>Why do I need Python (I would prefer Maven)?</a></h2><p>We need a lot of scripts to manage Play applications, for creating a new application, running it, launching a browser, etc… Of course we could write these in Java directly. But running a Java VM for simple tasks like project creation is very slow. And Java itself is very limited when it comes to OS interaction.</p><p>Python allowed us to write these scripts in a completely portable way. It’s fast to run, easy to write and available out of the box on most systems. It’s not on Windows, that’s why we bundle a Windows Python binary with the framework.</p><h2 id="aIsPlayaGroovyframeworka"><a>Is Play a Groovy framework?</a></h2><p>No. Even though we use Groovy as the base technology for the Play templating system, it’s totally transparent. Also, you can’t directly write any other part of the application (such as controllers, models or other utilities) in Groovy. If you’re looking for a Groovy based framework you should have a look at Grails.</p><h2 id="aYouguysdontevenknowhowtoprograminJava...a"><a>You guys don’t even know how to program in Java...</a></h2><p>We are fully aware that we made choices that are pretty uncommon in the Java world, and that Play does not blindly follow all the so-called Java ‘good practices’. But all of the Play team members are very experienced Java developers and we are totally aware of the choices we made and the rules we broke.</p><p>Java itself is a very generic programming language and not originally designed for web application development. It is a very different thing to write a generic and reusable Java library and to create a web application. A web application itself doesn’t need to be designed to be reusable. You need less abstraction, less configuration. Reusability does exist for web applications, but through web service APIs rather than language-level integration.</p><p>When the development time tends to zero you can concentrate on your application features and experiment quickly, instead of trying to abstract things for future developments.</p><h2 id="aIsPlayfasta"><a>Is Play fast?</a></h2><p>Yes, Play itself is fast. But that doesn’t mean that any particular application will be fast. The embedded HTTP server, the basic routing and the controller invocation stack are very very fast. Used with a modern JVM and Just In Time compiling you can easily get thousands of requests per second. Unfortunately, your application will likely use a database, which will become the bottleneck as usual.</p><p>The biggest CPU consumer in the Play stack at the moment is the Groovy-based template engine. But as Play applications are easily scalable, it is not really a problem if you need to handle very high traffic: you can balance the load between several servers. We also hope for a performance gain at this level with the new JDK7 and its better support for dynamic languages.</p><h2 id="aCanIalreadyusePlayforaproductionapplicationa"><a>Can I already use Play for a production application?</a></h2><p>Sure, <a href="http://www.playframework.org/community/testimonials">a lot of people</a> already use Play in production. The 1.0 branch is now in maintenance mode, which means that we will just fix bugs and keep API compatibility in that branch.</p><h2 id="aIslibraryXsupporteda"><a>Is library X supported?</a></h2><p>Play is standard Java, so any standard Java library can easily be used. However keep in mind that Play does not use the Servlet API (although you can get it work in a standard Servlet container using the WAR export feature). So unless the library you want to use relies on the Servlet API, there won’t be any problem.</p><h2 id="aHowcanIhelpcontributea"><a>How can I help/contribute?</a></h2><p>We use <a href="http://github.com/playframework/play">GitHub</a> as our main development tool, and launchpad itself is very open. You can just register a GitHub account and fork the code base. Check the <a href="http://play.lighthouseapp.com/projects/57987/contributor-guide">contributor guide</a>.</p><p>The documentation itself is kept as <a href="http://en.wikipedia.org/wiki/Textile_(markup_language%29">Textile</a> files in the framework source repository, so you can edit it and contribute just as you do with code.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

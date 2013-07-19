@@ -1,0 +1,173 @@
+<html>
+    <head>
+        <title>Play manual - Viewing and posting comments</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Viewingandpostingcomments">Viewing and posting comments</h1><p>The blog home page is now set, and we will continue by writing the post details page. This page will show all the comments about the current post, and will include a form to post new comments.</p><h2 id="aCreatingtheshowactiona"><a>Creating the ‘show’ action</a></h2><p>To display the post details page, we will need a new action method on the <code>Application</code> controller. Let’s call it <code>show()</code>:</p><pre><code>public static void show(Long id) {
+    Post post = Post.findById(id);
+    render(post);
+}
+</code></pre><p>As you can see this action is pretty simple. We declare the <code>id</code> method parameter to automatically retrieve the HTTP <code>id</code> parameter as a <code>Long</code> Java object. This parameter will be extracted either from the query string, from the URL path or from the request body.</p><p class="note">If we try to send an <code>id</code> HTTP parameter that is not a valid number, the <code>id</code> variable value will be <code>null</code> and Play will automatically add a validation error to the <code>errors</code> container.</p><p>This action will display the <code>/yabe/app/views/Application/show.html</code> template:</p><pre><code>#{extends 'main.html' /}
+#{set title:post.title /}
+ 
+#{display post:post, as:'full' /}
+</code></pre><p>Because we’ve already written the <code>display</code> tag, this page is really simple to write.</p><h2 id="aAddinglinkstothedetailspagea"><a>Adding links to the details page</a></h2><p>In the display tag we’ve left all links empty (using <code>#</code>). It’s now time to make these links point to the <code>Application.show</code> action. With Play you can easily build links in a template using the <code>@{…}</code> notation. This syntax uses the router to ‘reverse’ the URL needed to call the specified action. </p><p>Let’s edit the <code>/yabe/app/views/tags/display.html</code> tag:</p><pre><code>…
+&lt;h2 class="post-title">
+    &lt;a href="@{Application.show(_post.id)}">${_post.title}&lt;/a>
+&lt;/h2>
+…
+</code></pre><p>You can now refresh the home page, and click a post title to display the post.</p><p><img border="0" src="images/guide4-0"/></p><p>It’s great, but it lacks a link to go back to the home page. Edit the <code>/yabe/app/views/main.html</code> template to complete the title link:</p><pre><code>…
+&lt;div id="title">
+    &lt;span class="about">About this blog&lt;/span>
+    &lt;h1>&lt;a href="@{Application.index()}">${blogTitle}&lt;/a>&lt;/h1>
+    &lt;h2>${blogBaseline}&lt;/h2>
+&lt;/div>
+… 
+</code></pre><p>We can now navigate between the home page and the post detail pages.</p><h2 id="aSpecifyingabetterURLa"><a>Specifying a better URL</a></h2><p>As you can see, the post detail page URL looks like:</p><pre><code>/application/show?id=1
+</code></pre><p>This is because Play has used the default ‘catch all’ route.</p><pre><code>*       /{controller}/{action}                  {controller}.{action}
+</code></pre><p>We can have a better URL by specifying a custom path for the <code>Application.show</code> action. Edit the <code>/yabe/conf/routes</code> file and add this route after the first one:</p><pre><code>GET     /posts/{id}                             Application.show
+</code></pre><p class="note">This way the <code>id</code> parameter will be extracted from the URL path. You can read more about URI patterns on the manual page about <a href="routes.html#syntax">Route File Syntax</a>.</p><p>Refresh the browser and check that it now uses the correct URL.</p><h2 id="aAddingpaginationa"><a>Adding pagination</a></h2><p>To allow users to navigate easily through posts, we will add a pagination mechanism. We’ll extend the Post class to be able to fetch previous and next post as required:</p><pre><code>public Post previous() {
+    return Post.find("postedAt &lt; ? order by postedAt desc", postedAt).first();
+}
+ 
+public Post next() {
+    return Post.find("postedAt > ? order by postedAt asc", postedAt).first();
+}
+</code></pre><p>We will call these methods several times during a request so they could be optimized, but they’re good enough for now. Also, add the pagination links at the top of the <code>show.html</code> template (before the <code>#{display/}</code> tag):</p><pre><code>&lt;ul id="pagination">
+    #{if post.previous()}
+        &lt;li id="previous">
+            &lt;a href="@{Application.show(post.previous().id)}">
+                ${post.previous().title}
+            &lt;/a>
+        &lt;/li>
+    #{/if}
+    #{if post.next()}
+        &lt;li id="next">
+            &lt;a href="@{Application.show(post.next().id)}">
+                ${post.next().title}
+            &lt;/a>
+        &lt;/li>
+    #{/if}
+&lt;/ul>
+</code></pre><p>It’s better now.</p><h2 id="aAddingthecommentforma"><a>Adding the comment form</a></h2><p>Now it’s time to set up a comments form. We’ll start by adding the <code>postComment</code> action method to the Application controller.</p><pre><code>public static void postComment(Long postId, String author, String content) {
+    Post post = Post.findById(postId);
+    post.addComment(author, content);
+    show(postId);
+}
+</code></pre><p>As you can see we just reuse the <code>addComment()</code> method we previously added to the Post class.</p><p>Let’s write the HTML form in the <code>show.html</code> template (after the <code>#{display /}</code> tag in fact):</p><pre><code>&lt;h3>Post a comment&lt;/h3>
+ 
+#{form @Application.postComment(post.id)}
+    &lt;p>
+        &lt;label for="author">Your name: &lt;/label>
+        &lt;input type="text" name="author" id="author" />
+    &lt;/p>
+    &lt;p>
+        &lt;label for="content">Your message: &lt;/label>
+        &lt;textarea name="content" id="content">&lt;/textarea>
+    &lt;/p>
+    &lt;p>
+        &lt;input type="submit" value="Submit your comment" />
+    &lt;/p>
+#{/form}
+</code></pre><p>You can now try posting a new comment. It should just work.</p><p><img border="0" src="images/guide4-1"/></p><h2 id="aAddingvalidationa"><a>Adding validation</a></h2><p>Currently we don’t validate the form content before creating the comment. We would like to make both fields required. We can easily use the Play validation mechanism to ensure that the HTTP parameters are correctly filled in. Modify the <code>postComment</code> action to add <code>@Required</code> validation annotations and check that no error occurs:</p><pre><code>public static void postComment(Long postId, @Required String author, @Required String content) {
+    Post post = Post.findById(postId);
+    if (validation.hasErrors()) {
+        render("Application/show.html", post);
+    }
+    post.addComment(author, content);
+    show(postId);
+}
+</code></pre><p class="note"><b>Don’t forget</b> to import <code>play.data.validation.*</code> as well.</p><p>As you can see, in case of validation errors, we re-display the post detail page. We have to modify the form code to display the error message:</p><pre><code>&lt;h3>Post a comment&lt;/h3>
+ 
+#{form @Application.postComment(post.id)}
+ 
+    #{ifErrors}
+        &lt;p class="error">
+            All fields are required!
+        &lt;/p>
+    #{/ifErrors}
+ 
+    &lt;p>
+        &lt;label for="author">Your name: &lt;/label>
+        &lt;input type="text" name="author" id="author" value="${params.author}" />
+    &lt;/p>
+    &lt;p>
+        &lt;label for="content">Your message: &lt;/label>
+        &lt;textarea name="content" id="content">${params.content}&lt;/textarea>
+    &lt;/p>
+    &lt;p>
+        &lt;input type="submit" value="Submit your comment" />
+    &lt;/p>
+#{/form}
+</code></pre><p>Note that we reuse the posted parameters to fill the HTML input values.</p><p>To make the UI feedback more pleasant for the poster, we will add a little JavaScript to automatically set focus on the comment form in case of an error. As this script uses <a href="files/jquery-1.4.2.min.js">JQuery</a> and <a href="http://cdn.jquerytools.org/1.2.5/full/jquery.tools.min.js">JQuery Tools Expose</a> as support libraries, you have to include them. Download these two libraries to the <code>yabe/public/javascripts/</code> directory and modify the <code>main.html</code> template to include them:</p><pre><code>…
+    &lt;script src="@{'/public/javascripts/jquery-1.4.2.min.js'}">&lt;/script>
+    &lt;script src="@{'/public/javascripts/jquery.tools-1.2.5.toolbox.expose.min.js'}">&lt;/script>
+&lt;/head>
+</code></pre><p class="note">Note that the current version of Play bundles a newer version of jQuery than the one used in this tutorial.</p><p>Now you can add this script to the <code>show.html</code> template (add it at the end of the page):</p><pre><code>&lt;script type="text/javascript" charset="utf-8">
+    $(function() {         
+        // Expose the form 
+        $('form').click(function() { 
+            $('form').expose({api: true}).load(); 
+        }); 
+        
+        // If there is an error, focus to form
+        if($('form .error').size()) {
+            $('form').expose({api: true, loadSpeed: 0}).load(); 
+            $('form input[type=text]').get(0).focus();
+        }
+    });
+&lt;/script>
+</code></pre><p><img border="0" src="images/guide4-2"/></p><p>The comment form looks pretty cool now. We will add two more things.</p><p>First, we will display a success message after a comment is successfully posted. For that, we use the flash scope that allows us to pass messages from one action call to the next one.</p><p>Modify the <code>postComment</code> action to add a success message:</p><pre><code>public static void postComment(Long postId, @Required String author, @Required String content) {
+    Post post = Post.findById(postId);
+    if(validation.hasErrors()) {
+        render("Application/show.html", post);
+    }
+    post.addComment(author, content);
+    flash.success("Thanks for posting %s", author);
+    show(postId);
+}
+</code></pre><p>and display the success message in <code>show.html</code> if present (add it at the top of the page):</p><pre><code>…
+#{if flash.success}
+    &lt;p class="success">${flash.success}&lt;/p>
+#{/if}
+ 
+#{display post:post, as:'full' /}
+…
+</code></pre><p><img border="0" src="images/guide4-3"/></p><p>The last thing we will adjust in this form is the URL used for the <code>postComment</code> action. As always, it uses the default catch-all route because we didn’t define any specific route. So add this route to the application routes file:</p><pre><code>POST    /posts/{postId}/comments                Application.postComment
+</code></pre><p>That’s done. As always, commit the version to bazaar.</p><p class="note">Next: <span class="next"><a href="guide5.html">Setting up a Captcha</a></span>. </p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

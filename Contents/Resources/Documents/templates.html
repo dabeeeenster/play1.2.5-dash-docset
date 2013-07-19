@@ -1,0 +1,172 @@
+<html>
+    <head>
+        <title>Play manual - The template engine</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Thetemplateengine">The template engine</h1><p>Play has an efficient templating system which allows to dynamically generate HTML, XML, JSON or any text-based formatted document. The template engine uses <a href="http://groovy.codehaus.org/">Groovy</a> as an expression language. A tag system allows you to create reusable functions.</p><p>Templates are stored in the <code>app/views</code> directory. </p><h2 id="anamesyntaxTemplatesyntaxa"><a name="syntax">Template syntax</a></h2><p>A template file is a text file, some parts of which have placeholders for dynamically generated content. The  template’s dynamic elements are written using the <a href="http://groovy.codehaus.org/">Groovy</a> language. Groovy’s syntax is very close to Java’s. </p><p>Dynamic elements are resolved during template execution. The rendered result is then sent as part of the HTTP response.</p><h3 id="Expressions">Expressions: ${…}</h3><p>The simplest way to make a dynamic element is to declare an expression. The syntax used here is <code>${…}</code>. The result of evaluating the expression is inserted in place of the expression.</p><p>For example:</p><pre><code>&lt;h1>Client ${client.name}&lt;/h1>
+</code></pre><p>If you can’t be sure of client being null, there is a Groovy shortcut:</p><pre><code>&lt;h1>Client ${client?.name}&lt;/h1>
+</code></pre><p>Which will only display the client name if the client is not null.</p><h3 id="TemplatedecoratorsextendsanddoLayout">Template decorators : #{extends  /} and  #{doLayout  /}</h3><p>Decorators provide a clean solution to share a page layout (or design) across several templates. </p><p class="note">Use <a href="tags.html#ageta">#{get}</a> and <a href="tags.html#aseta">#{set}</a> tags to share variables between the template and the decorator. </p><p>Embedding a page in a decorator is the matter of a one liner:</p><pre><code>#{extends 'simpledesign.html' /}
+ 
+#{set title:'A decorated page' /}
+This content will be decorated.
+</code></pre><p>The decorator : <code>simpledesign.html</code></p><pre><code>&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+&lt;head>
+  &lt;title>#{get 'title' /}&lt;/title>
+  &lt;link rel="stylesheet" type="text/css" href="@{'/public/stylesheets/main.css'}" />
+&lt;/head>
+&lt;body>
+  &lt;h1>#{get 'title' /}&lt;/h1>
+  #{doLayout /}
+  &lt;div class="footer">Built with the play! framework&lt;/div>
+&lt;/body>
+&lt;/html>
+</code></pre><h3 id="TagstagName">Tags: #{tagName /}</h3><p>A tag is a template fragment that can be called with parameters. If the tag has only one parameter, by convention it is called &#8220;arg&#8221; and its name can be omitted.</p><p>For example, this tag inserts a SCRIPT tag to load a JavaScript file:</p><pre><code>#{script 'jquery.js' /}
+</code></pre><p>A tag has to be closed, either directly or by an end tag:</p><pre><code>#{script 'jquery.js' /}
+</code></pre><p>or</p><pre><code>#{script 'jquery.js'}#{/script}
+</code></pre><p>For example the <code>list</code> tag allows iteration over any collection. It takes two mandatory parameters:</p><pre><code>&lt;h1>Client ${client.name}&lt;/h1>
+&lt;ul>
+    #{list items:client.accounts, as:'account' }
+        &lt;li>${account}&lt;/li>
+    #{/list}
+&lt;/ul>
+</code></pre><p>All dynamic expressions are escaped by the template engine to avoid XSS security issues in your application. So the <code>title</code> variable containing <code>&lt;h1>Title&lt;/h1></code> is now escaped:</p><pre><code>${title} --> &amp;lt;h1&amp;gt;Title&amp;lt;/h1&amp;gt;
+</code></pre><p>If you really want to display it in an unescaped way, you need to explicitely call the <code>raw()</code> method:</p><pre><code>${title.raw()} --> &lt;h1>Title&lt;/h1>
+</code></pre><p>Also, if you want to display a large part of raw HTML, you can use the <code>#{verbatim /}</code> tag:</p><pre><code>#{verbatim}
+    ${title} --> &lt;h1>Title&lt;/h1>
+#{/verbatim}
+</code></pre><h3 id="Actionsor">Actions: @{…} or @@{…}</h3><p>You can use the Router to (reverse) generate a URL corresponding to a specified route. From a template you can use the special <code>@{…}</code> syntax to do that.</p><p>For example:</p><pre><code>&lt;h1>Client ${client.name}&lt;/h1>
+&lt;p>
+   &lt;a href="@{Clients.showAccounts(client.id)}">All accounts&lt;/a>
+&lt;/p>
+&lt;hr />
+&lt;a href="@{Clients.index()}">Back&lt;/a>
+</code></pre><p>The <code>@@{…}</code> syntax does the same but generates an absolute URL (notably useful for e-mail).</p><h3 id="Messages">Messages: &amp;{…}</h3><p>If your application needs internationalization you can use the <code>&amp;{…}</code> syntax to display an internationalized message:</p><p>For example in the files <code>conf/messages</code> we specify:</p><pre><code>clientName=The client name is %s
+</code></pre><p>To display this message in a template, simply use:</p><pre><code>&lt;h1>&amp;{'clientName', client.name}&lt;/h1>
+</code></pre><h3 id="Comment">Comment: *{…}*</h3><p>Comments aren’t evaluated by the template engine. They are just comments…</p><pre><code>*{**** Display the user name ****}*
+&lt;div class="name">
+    ${user.name}
+&lt;/div>
+</code></pre><h3 id="Scripts">Scripts: %{…}%</h3><p>A script is a more complicated set of expressions. A script can declare some variables and define some statements. Use the <code>%{…}%</code> syntax to insert a script.</p><pre><code>%{
+   fullName = client.name.toUpperCase()+' '+client.forname;
+}%
+ 
+&lt;h1>Client ${fullName}&lt;/h1>
+</code></pre><p>A script can write dynamic content directly using the <code>out</code> object:</p><pre><code>%{
+   fullName = client.name.toUpperCase()+' '+client.forname;
+   out.print('&lt;h1>'+fullName+'&lt;/h1>');
+}%
+</code></pre><p>You can use a script to create a structure such as an iteration in your template:</p><pre><code>&lt;h1>Client ${client.name}&lt;/h1>
+&lt;ul>
+%{
+     for(account in client.accounts) { 
+}%
+     &lt;li>${account}&lt;/li>
+%{
+     }
+}%
+&lt;/ul>
+</code></pre><p>Bear in mind that a template is not a place to do complex things. So, use a tag when you can, or move the computations into the controller or the model object.</p><h2 id="anameinheritanceTemplateinheritancea"><a name="inheritance">Template inheritance</a></h2><p>A template can inherit another template, i.e. it can be included as a part of an other template.</p><p>To inherit another template, use the <code>extends</code> tag:</p><pre><code>#{extends 'main.html' /}
+ 
+&lt;h1>Some code&lt;/h1>
+</code></pre><p>The <code>main.html</code> template is a standard template, but it uses the <code>doLayout</code> tag to include the content:</p><pre><code>&lt;h1>Main template&lt;/h1>
+ 
+&lt;div id="content">
+    #{doLayout /}
+&lt;/div>
+</code></pre><h2 id="anametagsCustomtemplatetagsa"><a name="tags">Custom template tags</a></h2><p>You can easily create specific tags for your application. A tag is a simple template file, stored in the <code>app/views/tags</code> directory. The template’s file name is used as the tag name.</p><p>To create a <code>hello</code> tag, just create the <code>app/views/tags/hello.html</code> file.</p><pre><code>Hello from tag!
+</code></pre><p>No need to configure anything. You can use the tag directly:</p><pre><code>#{hello /}
+</code></pre><h3 id="Retrievetagparameters">Retrieve tag parameters</h3><p>Tag parameters are exposed as template variables. The variable names are constructed with the ‘_’ character prepended to the parameter name. </p><p>For example: </p><pre><code>Hello ${_name} !
+</code></pre><p>And you can pass the name parameter to the tag:</p><pre><code>#{hello name:'Bob' /}
+</code></pre><p>If your tag has only one parameter, you can use the fact than the default parameter name is <code>arg</code> and that its name is implicit.</p><p>Example:</p><pre><code>Hello ${_arg}!
+</code></pre><p>And you can call it easily using:</p><pre><code>#{hello 'Bob' /}
+</code></pre><h3 id="Invoketagbody">Invoke tag body</h3><p>If your tag supports a <code>body</code>, you can include it at any point in the tag code, using the <code>doBody</code> tag.</p><p>For example:</p><pre><code>Hello #{doBody /}!
+</code></pre><p>And you can then pass the name as tag body:</p><pre><code>#{hello}
+   Bob
+#{/hello}
+</code></pre><h3 id="Formatspecifictags">Format-specific tags</h3><p>You can have different versions of a tag for different <a href="routes.html#content-types">content types</a> and Play will select the appropriate tag. For example, Play will use the <code>app/views/tags/hello.html</code> tag when <code>request.format</code> is <code>html</code>, and <code>app/views/tags/hello.xml</code> when the format is <code>xml</code>.</p><p>Whatever the content type, Play will fall back to the <code>.tag</code> extension if a format-specific tag is not available, e.g. <code>app/views/tags/hello.tag</code>.</p><h2 id="anamefasttagsCustomJavatagsa"><a name="fasttags">Custom Java tags</a></h2><p>You can also define custom tags in Java code. Similarly to how JavaExtensions work by extending the <code>play.templates.JavaExtensions</code> class, to create a FastTag you need to create a method in a class that extends <code>play.templates.FastTags</code>. Each method that you want to execute as a tag must have the following method signature.</p><pre><code>public static void _tagName(Map&lt;?, ?> args, Closure body, PrintWriter out, 
+   ExecutableTemplate template, int fromLine)
+</code></pre><p class="note">Note the underscore before the tag name.</p><p>To understand how to build an actual tag, let’s look at two of the built-in tags.</p><p>For example, the <code>verbatim</code> tag is implemented by a one-line method that simply calls the toString method on the JavaExtensions, and passes in the body of the tag.</p><pre><code>public static void _verbatim(Map&lt;?, ?> args, Closure body, PrintWriter out, 
+   ExecutableTemplate template, int fromLine) {
+   
+   out.println(JavaExtensions.toString(body));
+}
+</code></pre><p>The body of the tag would be anything between the open and close tag. So</p><pre><code>&lt;verbatim>My verbatim&lt;/verbatim>
+</code></pre><p>The body value would be </p><pre><code>My verbatim
+</code></pre><p>The second example is the <code>option</code> tag, which is slightly more complex because it relies on a parent tag to function.</p><pre><code>public static void _option(Map&lt;?, ?> args, Closure body, PrintWriter out, 
+      ExecutableTemplate template, int fromLine) {
+ 
+   Object value = args.get("arg");
+   Object selection = TagContext.parent("select").data.get("selected");
+   boolean selected = selection != null &amp;&amp; value != null 
+      &amp;&amp; selection.equals(value);
+ 
+   out.print("&lt;option value=\"" + (value == null ? "" : value) + "\" " 
+      + (selected ? "selected=\"selected\"" : "") 
+      + "" + serialize(args, "selected", "value") + ">");
+   out.println(JavaExtensions.toString(body));
+   out.print("&lt;/option>");
+}
+</code></pre><p>This code works by outputting an HTML <code>option</code> tag, and sets the selected value by checking which value is selected from the parent tag. The first three lines set variables for use in the output output. Then, the final three lines output the result of the tag.</p><p>There are many more examples in the source code for the built in tags, with varying degrees of complexity. See <a href="https://github.com/playframework/play/blob/master/framework/src/play/templates/FastTags.java">FastTags.java in github</a>.</p><h3 id="Tagnamespaces">Tag namespaces</h3><p>To ensure that your tags do not conflict between projects, or with the core Play tags, you can set up namespaces, using the class level annotation <code>@FastTags.Namespace</code>.</p><p>So, for a <code>hello</code> tag, in a <code>my.tags</code> namespace, you would do the following</p><pre><code>@FastTags.Namespace("my.tags") 
+public class MyFastTag extends FastTags {
+   public static void _hello (Map&lt;?, ?> args, Closure body, PrintWriter out, 
+      ExecutableTemplate template, int fromLine) {
+      ...
+   }
+}
+</code></pre><p>and then in your templates, you would reference the hello tag as</p><pre><code>#{my.tags.hello/}
+</code></pre><h2 id="anameextensionsJavaobjectextensionsintemplatesa"><a name="extensions">Java object extensions in templates</a></h2><p>When you use your Java object within the template engine, new methods are added to it. These methods don’t exist in the original Java class and are dynamically added by the template engine.</p><p>For example, to allow easy number formatting in a template, a <code>format</code> method is added to <code>java.lang.Number</code>.</p><p>It’s then very easy to format a number:</p><pre><code>&lt;ul>
+#{list items:products, as:'product'}
+    &lt;li>${product.name}. Price: ${product.price.format('## ###,00')} €&lt;/li>
+#{/list}
+&lt;/ul>
+</code></pre><p>The same applies to <code>java.util.Date</code>.</p><p>The <a href="javaextensions.html">Java extensions</a> manual page lists the available methods, by type.</p><h3 id="Createcustomextensions">Create custom extensions</h3><p>Your project may have specific formatting needs, in which case you can provide your own extensions.</p><p>You only need to create a Java class extending <code>play.templates.JavaExtensions</code>.</p><p>For instance, to provide a custom currency formatter for a number:</p><pre><code>package ext;
+ 
+import play.templates.JavaExtensions;
+ 
+public class CurrencyExtensions extends JavaExtensions {
+ 
+  public static String ccyAmount(Number number, String currencySymbol) {
+     String format = "'"+currencySymbol + "'#####.##";
+     return new DecimalFormat(format).format(number);
+  }
+ 
+}
+</code></pre><p>Each extension method is a static method and should return a <code>java.lang.String</code> to be written back in the page. The first parameter will hold the enhanced object.</p><p>Use your formatter like this:</p><pre><code>&lt;em>Price: ${123456.324234.ccyAmount("€")}&lt;/em>
+</code></pre><p>Template extension classes are automatically detected by Play at start-up. You just have to restart your application to make them available.</p><h2 id="anameimplicitsImplicitobjectsavailableinatemplatea"><a name="implicits">Implicit objects available in a template</a></h2><p>All objects added to the <code>renderArgs</code> scope are directly injected as template variables. </p><p>For instance, to inject a ‘user’ bean into the template from a controller:</p><pre><code>renderArgs.put("user", user );
+</code></pre><p>When you render a template from an action, the framework also adds implicit objects:</p><table><tr><th>Variable </th><th>Description </th><th>API documentation </th><th>See also </th></tr><tr><td><code>errors</code> </td><td>Validation errors </td><td><a href="http://localhost:9000/@api/play/data/validation/Validation.html#errors%28%29">play.data.validation.Validation.errors()</a> </td><td><a href="validation.html">Validating HTTP data</a> </td></tr><tr><td><code>flash</code> </td><td>Flash scope </td><td><a href="http://localhost:9000/@api/play/mvc/Scope.Flash.html">play.mvc.Scope.Flash</a>  </td><td><a href="controllers.html#session">Controllers - Session &amp; Flash Scope</a> </td></tr><tr><td><code>lang</code> </td><td>The current language </td><td><a href="http://localhost:9000/@api/play/i18n/Lang.html">play.i18n.Lang</a> </td><td><a href="i18n.html#languages">Setting up I18N - Define languages</a> </td></tr><tr><td><code>messages</code> </td><td>The messages map </td><td><a href="http://localhost:9000/@api/play/i18n/Messages.html">play.i18n.Messages</a> </td><td><a href="i18n.html#messages">Setting up I18N - Externalize messages</a> </td></tr><tr><td><code>out</code> </td><td>The output stream writer </td><td>java.io.PrintWriter </td><td> </td></tr><tr><td><code>params</code> </td><td>Current parameters </td><td><a href="http://localhost:9000/@api/play/mvc/Scope.Params.html">play.mvc.Scope.Params</a>  </td><td><a href="controllers.html#params">Controllers - HTTP parameters</a> </td></tr><tr><td><code>play</code> </td><td>Main framework class </td><td><a href="http://localhost:9000/@api/play/Play.html">play.Play</a> </td><td> </td></tr><tr><td><code>request</code> </td><td>The current HTTP request </td><td><a href="http://localhost:9000/@api/play/mvc/Http.Request.html">play.mvc.Http.Request</a>  </td><td> </td></tr><tr><td><code>session</code> </td><td>Session scope </td><td><a href="http://localhost:9000/@api/play/mvc/Scope.Session.html">play.mvc.Scope.Session</a>  </td><td><a href="controllers.html#session">Controllers - Session &amp; Flash Scope</a> </td></tr></table><p>In addition to the list above the names <code>owner</code>, <code>delegate</code> and <code>it</code> are reserved in Groovy and shouldn&#8217;t be used as variable names in templates.</p><p class="note">Next: <span class="next"><a href="validation.html">Form data validation</a></span></p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

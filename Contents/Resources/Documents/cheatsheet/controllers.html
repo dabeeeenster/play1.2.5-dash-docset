@@ -1,0 +1,65 @@
+<html>
+    <head>
+        <title>Play manual - Cheat Sheet</title>
+        <link rel="stylesheet" href="../playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="../playmanual/jquery-1.3.2.min.js"></script>
+        <link rel="stylesheet" href="../playmanual/cheat-sheet.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/cheat-sheet-print.css" type="text/css" media="print" charset="utf-8">
+    </head>
+    <body>
+        <div class="cs-wrapper">
+            <div id="docTopbar">
+                <div id="backToToc">
+                    <span>Back to </span><a href="../home.html">Table of contents</a>
+                </div>
+                <div id="searchBar">
+                    <span>Get help with Google:</span>
+                    <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+                </div>
+                <div class="titlebar">
+                    <h1>Controllers</h1>
+                </div>
+                <div class="titlebar links">
+                                                                        <a href="commandLine.html" >Command Line</a>                                                 &nbsp;
+                                                                         Controllers
+                                                &nbsp;
+                                                                        <a href="model.html" >Model</a>                                                 &nbsp;
+                                                                        <a href="multiEnvironment.html" >Multi Environment</a>                                                 &nbsp;
+                                                                        <a href="templates.html" >Templates</a>                                                 &nbsp;
+                                                                        <a href="tests.html" >Tests</a>                                                 &nbsp;
+                                    </div>
+                <div id="logobar">
+                    <img src="../playmanual/logo.png">
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+            </div>
+            <div id="content" class="wikistyle">
+                                    <div class="cs odd">
+                       <h2 id="Controller.actionSmartbinding">Controller.action &#8211; Smart binding</h2><p><strong>Controller/link?i=32&n=patrick</strong><br/>public static void link(int i, String n)<br/>public static void link(Integer i, String n)<br/>public static void link(Long i, String n)</p><p><strong>Controller/show?id[0]=1&id[1]=2&id[2]=3&id[3]=4</strong><br/>public static void show(Long[] id)<br/>public static void show(List<Long> id)<br/>public static void show(Set<Long> id)</p><p><strong>Controller/get?date=02-18-1972</strong><br/>public static void get(@As("MM-dd-yyyy") Date date)</p><p><strong>(@As(binder=MyCustomStringBinder.class))</strong><br/>Custom parameter binder</p><p><strong>public static void create(String comment, File attachment)</strong><br/>Send File as multipart/form-data encoded POST request</p><p><strong>?client.name=paul&client.email=p@example.com</strong><br/><strong>public static void create(Client client)</strong><br/>JavaBean (POJO) binding</p><p><strong>@NoBinding</strong><br/>Marks a non-bindable field</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="Controller.actionValidation">Controller.action &#8211; Validation</h2><p><strong>@Required String lastname</strong><br/><strong>@IsTrue String agree</strong><br/><strong>@Max(7500) Integer wordCount</strong><br/><strong>@Min(18) Long age</strong><br/><strong>@MaxSize(2083) String value</strong><br/><strong>@MinSize(42) String value</strong><br/><strong>@Email String address</strong><br/><strong>@Equals("passwordConfirmation") String password</strong><br/><strong>@InFuture String dueDate</strong><br/><strong>@InFuture("1979-12-31") String birthDate</strong><br/><strong>@Match("[A-Z]{3}") String abbreviation</strong><br/><strong>@Match("(directDebit|creditCard|onReceipt)")</strong><br/><strong>@Past String actualDepartureDate</strong><br/><strong>@Past("1980-01-01") String birthDate</strong><br/><strong>@Range(min = 17500, max = 40000) String wordCount</strong><br/><strong>@URL String address</strong><br/><strong>@IPv4Address String ip</strong><br/><strong>@IPv6Address String ip</strong></p><p><strong>@Phone String phone</strong><br/>Relaxed phone validation</p><p><strong>@Valid Person person</strong><br/>JavaBean (POJO) validation &#8211; class Person needs validation annotations</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="ControllerSessionManagement">Controller &#8211; Session Management</h2><p><strong>WARNING: Play Session is NOT the J2EE session</strong><br/>session and flash use cookies! 4KB limit/20 cookies max</p><p><strong>session.getId();</strong><br/>Returns the session ID &#8211; in most cases: a must have!</p><p><strong>session.put(String key, String value);</strong><br/><strong>session.get(&#8220;user_flag&#8221;);</strong><br/>Values are limited to Strings, 4KB max</p><p><strong>flash.put(String key, String value);</strong><br/><strong>flash.get(String key);</strong><br/>Flash entries are discarded at end of next request</p><p><strong>Cache.set(&#8220;key_&#8221; + id, product, &#8220;30mn&#8221;);</strong><br/>Set cache value to 30 minutes</p><p><strong>Cache.get(&#8220;key_&#8221; + id, Product.class);</strong><br/>Get cache value, may return null</p><p><strong>Cache.delete(&#8220;key_&#8221; + id);</strong><br/>Non blocking cache delete</p><p><strong>Cache.safeDelete(&#8220;key_&#8221; + id);</strong><br/>Blocking cache delete</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="Controller.actionRedirection">Controller.action &#8211; Redirection</h2><p><strong>render(params...);</strong><br/>Renders template with given parameters, as text/html</p><p><strong>renderXML(params...);</strong><br/>Renders parameters as application/xml</p><p><strong>renderJson(params...);</strong><br/>Renders parameters as application/json</p><p><strong>renderText(params...);</strong><br/>Renders parameters as text/plain</p><p><strong>renderTemplate(&#8220;Clients/showClient.html&#8221;, id, client);</strong><br/>Bypasses default template</p><p><strong>redirect(&#8220;http://www.crionics.com&#8221;);</strong><br/>HTTP redirect to the given URL</p><p><strong>From an action, calling another Controller.action()</strong><br/>The framework transparently generates a REDIRECT!</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="ControllerJobs">Controller &#8211; Jobs</h2><p><strong>@OnApplicationStart</strong></p><p><strong>@On("0 0 12 &lowast; &lowast; ?")</strong><br/>Every day at 12:01pm</p><p><strong>@On("10 30 12 ? &lowast; MON-FRI")</strong><br/>Every working day at 12:30pm and 10s</p><p><strong>@Every("1h")</strong><br/><strong>public class Bootstrap extends Job {public void doJob() {...} }</strong></p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="ControllerInterceptions">Controller &#8211; Interceptions</h2><p><strong>@Before ➟ action ➟ @After ➟ template ➟ @Finally</strong><br/>Interceptions evaluation order</p><p><strong>@Before static void checkAuthentification()</strong><br/><strong>@After static void log()</strong><br/><strong>@Finally static void audit()</strong><br/>You get the idea</p><p><strong>@With(Secure.class)</strong><br/><strong>public class Admin extends Application</strong><br/>Custom interceptors at the controller scope</p><p><strong>@Catch(value={RuntimeException.class})</strong><br/><strong>public static void onException(RuntimeException e) {…}</strong><br/>Exception handling at the controller level</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="Controller.actionOthers">Controller.action &#8211; Others</h2><p><strong>Logger.info("Action executed ...");</strong><br/><strong>Logger.debug("A log message");</strong><br/><strong>Logger.error(ex, "Oops");</strong><br/>Logging configuration lives in application.conf</p><p><strong>@CacheFor("1h") public static void index() { ... }</strong><br/>Caches the result of the action for 1 hour</p><p><strong>Play.configuration.getProperty("blog.title");</strong><br/>Access to the configuration file</p><p><strong>Query query = JPA.em().createQuery("query");</strong><br/>Access the persistence manager</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="ControllerLibraries">Controller &#8211; Libraries</h2><p><strong>WS.url("http://s.com/posts").get().toJSON();</strong><br/>HTTP GET request to JSON</p><p><strong>WS.withEncoding("iso-8859-1").url("http://s.com/posts").get().toJSON();</strong><br/>HTTP GET request to JSON using iso-8859-1 encoding</p><p><strong>WS.url("http://s.com/").post().toXML();</strong><br/>HTTP POST request to XML</p><p><strong>DB.execute("raw sql");</strong><br/>Eval raw SQL</p><p><strong>XML.getDocument(String);</strong><br/>String to XML</p><p><strong>XML.serialize(Document);</strong><br/>XML to String</p><p><strong>XPath.selectNodes(String xpath, Object node);</strong><br/>XPath expression evaluator</p><p><strong>Files.copy(File,File);</strong><br/>File copy</p><p><strong>Files.copyDir(File,File);</strong><br/>Recursive directory copy</p><p><strong>Files.delete(File);</strong><br/><strong>Files.deleteDirectory(File);</strong><br/>Deletes file/directory</p><p><strong>IO.readLines(File);</strong><br/><strong>IO.readContentAsString(File);</strong><br/><strong>IO.readContent(File);</strong><br/><strong>IO.write(byte[],File);</strong><br/>Read/Write file contents</p><p><strong>Images.crop(File orig,File to, int x1, int y1, int x2, int y2);</strong><br/><strong>Images.resize(File orig, File to, int w, int h);</strong><br/><strong>Images.toBase64(File image);</strong><br/>Handy methods!</p><p><strong>Crypto.encryptAES(String);</strong><br/><strong>Crypto.decryptAES(String);</strong><br/>Encryption using the application secret key</p><p><strong>Crypto.passwordHash(String);</strong><br/>Create an MD5 password hash</p><p><strong>Codec.UUID();</strong><br/>Generates unique IDs</p><p><strong>Codec.byteToHexString(byte[] bytes);</strong><br/>Write a byte array as hexadecimal String</p><p><strong>Codec.encodeBASE64(byte[] value);</strong><br/><strong>Codec.decodeBASE64(String base64);</strong><br/>Encode/Decode a base64 value</p><p><strong>Codec.hexSHA1(String);</strong><br/>Build a hexadecimal SHA1 hash for a String</p>
+                    </div>
+                            </div>
+        </div>
+    </body>
+</html>

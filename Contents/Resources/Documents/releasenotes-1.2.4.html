@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <title>Play manual - Play 1.2.4 -- Release notes</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Play1.2.4Releasenotes">Play 1.2.4 &#8212; Release notes</h1><p>You can read about the bugs fixed in Play 1.2.4 on the <a href="http://www.playframework.org/roadmap/1.2.4">road map page</a>. This page highlights the most important changes.</p><h2 id="SupportforJava7">Support for Java 7</h2><p>Play now supports Java 7 out-of-the-box, so you can write the following code without any problems.</p><pre><code>Map&lt;String, List&lt;String>> map = new HashMap&lt;>();
+String version = "1.2.4";
+switch(version) {
+	 case "1.2.4":
+	    //code
+	    break;
+	  case "1.2.3":
+	    //code
+	    break;
+	  case "1.2.2":
+	    //code
+	  default:
+	    //code
+	    break;
+}
+	
+</code></pre><h2 id="Newbinderimplementation">New binder implementation</h2><p>The new binder implementation is more flexible and allows easy mapping from jQuery to Play. It is also possible to map more complex objects using this new implementation.</p><h2 id="LatestWebSocketsupport">Latest WebSocket support</h2><p>Play now supports the latest draft WebSocket specification, namely hybi-00 to hybi-10. Please refer to the <a href="http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10">WebSocket specification</a> for more information.</p><h2 id="SupportforcompositeIDs">Support for composite IDs</h2><p>Fixtures now supports Composite IDs. The following annotations are also supported on your model and directly from the fixtures: <code>@IdClass</code>, <code>@EmbeddedId</code>. Please refer to the <a href="http://docs.jboss.org/hibernate/annotations/3.5/reference/en/html/entity.html#d0e2177">Hibernate documentation</a> for more information.</p><h2 id="BetterIntelliJsupport">Better IntelliJ support</h2><p>The <code>play idealize</code> command now creates a complete IntelliJ project. You can directly open your Play project from IntelliJ.</p><h2 id="Otherimprovements">Other improvements</h2><p>There are also a number of small improvements, as well as <a href="https://play.lighthouseapp.com/projects/57987-play-framework/milestones/121681-124">86 fixed bugs</a>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

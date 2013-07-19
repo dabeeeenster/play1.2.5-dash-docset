@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <title>Play manual - Installation guide</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Installationguide">Installation guide</h1><h2 id="anameprerequisitesPrerequisitesa"><a name="prerequisites">Prerequisites</a></h2><p>To run the Play framework, you need <a href="http://java.sun.com">Java 5 or later</a>. If you wish to build Play from source, you will need the <a href="http://git-scm.com/">Git source control client</a> to fetch the source code and <a href="http://ant.apache.org/">Ant</a> to build it.</p><p>Be sure to have Java in the current path (enter <code>java -version</code> to check). Play will use the default Java or the one available at the <code>$JAVA_HOME</code> path if defined.</p><p>The <strong>play</strong> command line utility uses Python. So it should work out of the box on any UNIX system (however it requires at least Python 2.5).</p><h2 id="anameinstallInstallationfromthebinarypackagea"><a name="install">Installation from the binary package</a></h2><h3 id="Genericinstructions">Generic instructions</h3><p>In general, the installation instructions are as follows.</p><ol><li>Install Java.</li><li>Download the latest <a href="http://download.playframework.org/">Play binary package</a> and extract the archive.</li><li>Add the ‘play’ command to your system path and make sure it is executable.</li></ol><h3 id="MacOSX">Mac OS X</h3><p>Java is built-in, or installed automatically, so you can skip the first step.</p><ol><li>Download the latest <a href="http://download.playframework.org/">Play binary package</a> and extract it in <code>/Applications</code>.</li><li>Edit <code>/etc/paths</code> and add the line <code>/Applications/play-1.2.5</code> (for example).</li></ol><p>An alternative on OS X is:</p><ol><li>install <a href="http://mxcl.github.com/homebrew/">HomeBrew</a></li><li>run <code>brew install play</code></li></ol><h3 id="Linux">Linux</h3><p>To install Java, make sure to use either the Sun-JDK or OpenJDK (and not gcj which is the default Java command on many Linux distros)</p><h3 id="Windows">Windows</h3><p>To install Java, just download and install the latest JDK package. You do not need to install Python separately, because a Python runtime is bundled with the framework.</p><h2 id="anamebuildBuildfromthelatestsourcesa"><a name="build">Build from the latest sources</a></h2><p>To benefit from the latest improvements and bug fixes, you may want to compile Play from sources. You’ll need a <a href="http://git-scm.com/">Git client</a> to fetch the sources and <a href="http://ant.apache.org/">Ant</a> to build the framework.</p><p>From the command line:</p><pre><code># git clone git://github.com/playframework/play.git
+# cd play/framework
+# ant
+</code></pre><p>The Play framework is ready to use.</p><h2 id="anamerunUsingtheplaycommanda"><a name="run">Using the play command</a></h2><p>When the framework is correctly installed, open a shell and execute <strong>play</strong>. </p><pre><code>$ play
+</code></pre><p>You should see the play default message:</p><p><img border="0" src="images/help"/></p><p>You can get more help on any specific command using <strong>play help any-command-name-here</strong>. For example, try:</p><pre><code># play help run
+</code></pre><h2 id="anamenewCreatinganewapplicationa"><a name="new">Creating a new application</a></h2><p>Use the <code>new</code> command to create a new application. You must give a non-existent path where the application will be created.</p><pre><code># play new myApp
+</code></pre><p><img border="0" src="images/guide1-1"/></p><p>Will create a new application. Start it with:</p><pre><code># play run myApp
+</code></pre><p>You can then open a browser at <a href="http://localhost:9000">http://localhost:9000</a> and see the default page for the application.</p><p><img border="0" src="images/guide1-2"/></p><p class="note"><b>Your Play environnement is ready</b><br/> <br/>Next: <span class="next"><a href="ide.html">Set-up your preferred IDE</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <title>Play manual - Cheat Sheet</title>
+        <link rel="stylesheet" href="../playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="../playmanual/jquery-1.3.2.min.js"></script>
+        <link rel="stylesheet" href="../playmanual/cheat-sheet.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/cheat-sheet-print.css" type="text/css" media="print" charset="utf-8">
+    </head>
+    <body>
+        <div class="cs-wrapper">
+            <div id="docTopbar">
+                <div id="backToToc">
+                    <span>Back to </span><a href="../home.html">Table of contents</a>
+                </div>
+                <div id="searchBar">
+                    <span>Get help with Google:</span>
+                    <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+                </div>
+                <div class="titlebar">
+                    <h1>Templates</h1>
+                </div>
+                <div class="titlebar links">
+                                                                        <a href="commandLine.html" >Command Line</a>                                                 &nbsp;
+                                                                        <a href="controllers.html" >Controllers</a>                                                 &nbsp;
+                                                                        <a href="model.html" >Model</a>                                                 &nbsp;
+                                                                        <a href="multiEnvironment.html" >Multi Environment</a>                                                 &nbsp;
+                                                                         Templates
+                                                &nbsp;
+                                                                        <a href="tests.html" >Tests</a>                                                 &nbsp;
+                                    </div>
+                <div id="logobar">
+                    <img src="../playmanual/logo.png">
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+            </div>
+            <div id="content" class="wikistyle">
+                                    <div class="cs odd">
+                       <h2 id="TemplateImplicitobjects">Template &#8211; Implicit objects</h2><p><strong>errors</strong><br/>The validation errors raised in the controller</p><p><strong>flash</strong><br/>Flash scope</p><p><strong>lang</strong><br/>The negotiated language</p><p><strong>messages</strong><br/>The map of localised messages</p><p><strong>out</strong><br/>The output stream writer</p><p><strong>params</strong><br/>Current parameters</p><p><strong>play</strong><br/>Main framework class</p><p><strong>request</strong><br/>The current HTTP request</p><p><strong>session</strong><br/>The session scope</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="TemplateTaggrammar">Template &#8211; Tag grammar</h2><p><strong>${ client.name }</strong><br/>Evaluates and outputs a variable</p><p><strong>${ client?.name }</strong><br/>Displays client.name only if client not null</p><p><strong>@{ Controller.action() }</strong><br/>Calculates URL relative path to action</p><p><strong>@{ Controller.action().secure() }</strong><br/>Calculates URL relative HTTPS path to action</p><p><strong>@@{ Controller.action() }</strong><br/>Calculates URL absolute path to action</p><p><strong>@{'path/to/static_content'}</strong><br/>&lt;img src="@{'/public/images/jpdf.png'}" class="center"/&gt;</p><p><strong>&{ message.key }</strong><br/>Message are maintained in conf/messages, supports i18</p><p><strong>&lowast;{ this is a comment }&lowast;</strong><br/>What else to say?</p><p><strong>%{ out.print("HelloWorld") }%</strong><br/>Groovy scripts for UI logic</p><p><strong>#{ my.custom.tag /}</strong><br/>A typical custom tag &#8211; page context not shared</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="TemplateStandardTags">Template &#8211; Standard Tags</h2><p><strong>#{extends ʻpage.htmlʼ/}</strong><br/><strong>#{doLayout /}</strong><br/>Master template decorators</p><p><strong>#{get 'title'}Used if title not set#{/get}</strong><br/><strong>#{set title:ʻHome Pageʼ}</strong><br/>Shared variables between page and master templates</p><p><strong>#{include 'tree.html'/}</strong><br/>Includes fragment &#8211; page context is shared</p><p><strong>#{script id:'myscript' , src:ʻscript.js', charset:'utf-8' /}</strong><br/><strong>#{stylesheet id:'main', media:'print', src:'print.css' /}</strong><br/>Imports script &amp; styles in the page</p><p><strong>#{a @Application.logout() }Disconnect#{/a}</strong><br/><strong>#{form @Client.create() , id:'form' enctype:'multipart/form-</strong><br/><strong>data' } ... #{/form}</strong><br/>Handy tags to create anchors and forms</p><p><strong>#{verbatim}${'&amp;'}#{/verbatim}</strong><br/>Disables HTML escaping</p><p><strong>#{i18n /}</strong><br/>Exports localized messages in Javascript</p><p><strong>#{ifErrors} &lt;p&gt;Error(s) found!&lt;/p&gt; #{/ifErrors}</strong><br/>Checks for validation errors</p><p><strong>#{ifError 'user.name'} #{error 'user.name' /} #{/ifError}</strong><br/>Checks a given error</p><p><strong>#{errors} &lt;li&gt;${error}&lt;/li&gt; #{/errors}</strong><br/>Iterates over the current validation errors</p><p><strong>#{if cond}...#{/if}#{elseif cond}...#{/elseif}#{else}...#{/else}</strong><br/><strong>#{ifnot cond}...#{/ifnot}</strong><br/>Conditional constructs</p><p><strong>#{list items:0..10, as:'i'}${i}#{/list}</strong><br/><strong>#{list items:'a'..'z', as:'l'}${l} ${l_isLast ?'':'|' }#{/list}</strong><br/><strong>#{list users}${_}#{/list}</strong><br/>Loop constructs</p><p><strong>#{list items:task, as:'task'}${task}#{/list}</strong><br/><strong>#{else}No tasks on the list#{/else}</strong><br/>Tip: Else can be used along with list</p><p><strong>#{cache ʻkeyʼ, for:ʼ15minʼ}...#{/cache}</strong><br/>Caches content for 15 minutes</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="TemplateCustomTags">Template &#8211; Custom Tags</h2><p><strong>@FastTags.Namespace("domain")</strong><br/><strong>public class RecaptchaTag extends FastTags {</strong><br/><strong>public static void _recaptcha(Map<?, ?> args, Closure body, PrintWriter out, ExecutableTemplate template, int fromLine) { …</strong></p><p><strong>/app/view/tags/domain/mytag.tag</strong><br/>Custom tag can be called as {#domain.mytag/}</p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="TemplateGroovyextension">Template &#8211; Groovy extension</h2><p><strong>${ ['red', 'green', 'blue'].join('/') }</strong><br/>red/green/blue</p><p><strong>${ (["red", "green", "blue"] as String[]).add('pink').join(' ') }</strong><br/>red green blue pink</p><p><strong>${ (['red', 'green', 'blue'] as String[]).contains('green') }</strong><br/>true</p><p><strong>${(['red', 'gr', 'blue'] as String[]).remove('gr').join(' ')}</strong><br/>red blue</p><p><strong>${ ['red', 'green', 'blue'].last() }</strong><br/>blue</p><p><strong>${ new Date(new Date().getTime() - 1000000).since() }</strong><br/>16 minutes ago</p><p><strong>${new Date(1275910970000).format('dd MMMM yyyy</strong><br/><strong>hh:mm:ss')}</strong><br/>07 June 2010 01:42:50</p><p><strong>${ 1275910970000.asdate('dd MMMM yyyy hh:mm:ss') }</strong><br/>07 June 2010 01:42:50</p><p><strong>${726016L.formatSize()}</strong><br/>709KB</p><p><strong>${ 42.formatCurrency('EUR').raw() }</strong><br/>&amp;euro; 42.00</p><p><strong>${ 42.page(10) }</strong><br/>5</p><p><strong>journ${ ['cnn', 'c+', 'f2'].pluralize('al', 'aux') }</strong><br/>journaux</p><p><strong>${ "lorum ipsum dolor".capAll() }</strong><br/>Lorum Ipsum Dolor</p><p><strong>${ "lorum ipsum dolor".camelCase() }</strong><br/>LorumIpsumDolor</p><p><strong>${ "lorum ipsum dolor".capFirst() }</strong><br/>Lorum ipsum dolor</p><p><strong>${ "lorum ipsum dolor".cut('um') }</strong><br/>lor ips dolor</p><p><strong>${ "The &lt;blink&gt;tag&lt;/blink&gt; is evil".escape().raw() }</strong><br/>The &amp;lt;blink&amp;gt;tag&amp;lt;/blink&amp;gt; is evil</p><p><strong>${ "one\ntwo".nl2br() }</strong><br/>one&lt;br/&gt;two</p><p><strong>${ '<' } ${ '<'.raw() }</strong><br/>&amp;lt; &lt;</p><p><strong>${ " (') (\") ".escapeJavaScript().raw() }</strong><br/>(\') (\")</p><p><strong>${ "".yesno('yes', 'no') }</strong><br/>no</p><p><strong>${ "not empty".yesno('yes', 'no') }</strong><br/>yes</p><p><strong>${"Stéphane Épardaud".noAccents()}</strong><br/>Stephane Epardaud</p><p><strong>${ "The Play! frameworkʼs manual".slugify() }</strong><br/>the-play-framework-s-manual</p><p><strong>${ "x".pad(4).raw() }</strong><br/>x&amp;nbsp;&amp;nbsp;&amp;nbsp;</p>
+                    </div>
+                            </div>
+        </div>
+    </body>
+</html>

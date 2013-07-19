@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <title>Play manual - Cheat Sheet</title>
+        <link rel="stylesheet" href="../playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="../playmanual/jquery-1.3.2.min.js"></script>
+        <link rel="stylesheet" href="../playmanual/cheat-sheet.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="../playmanual/cheat-sheet-print.css" type="text/css" media="print" charset="utf-8">
+    </head>
+    <body>
+        <div class="cs-wrapper">
+            <div id="docTopbar">
+                <div id="backToToc">
+                    <span>Back to </span><a href="../home.html">Table of contents</a>
+                </div>
+                <div id="searchBar">
+                    <span>Get help with Google:</span>
+                    <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+                </div>
+                <div class="titlebar">
+                    <h1>Tests</h1>
+                </div>
+                <div class="titlebar links">
+                                                                        <a href="commandLine.html" >Command Line</a>                                                 &nbsp;
+                                                                        <a href="controllers.html" >Controllers</a>                                                 &nbsp;
+                                                                        <a href="model.html" >Model</a>                                                 &nbsp;
+                                                                        <a href="multiEnvironment.html" >Multi Environment</a>                                                 &nbsp;
+                                                                        <a href="templates.html" >Templates</a>                                                 &nbsp;
+                                                                         Tests
+                                                &nbsp;
+                                    </div>
+                <div id="logobar">
+                    <img src="../playmanual/logo.png">
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+            </div>
+            <div id="content" class="wikistyle">
+                                    <div class="cs odd">
+                       <h2 id="TestUnitTests">Test &#8211; Unit Tests</h2><p><strong>@Test public void getRental() { ... }</strong><br/><strong>@Test (expected = NumberFormatException.class )</strong><br/><strong>@Ignore</strong><br/>Ignore any errors</p><p><strong>@Test (timeout=400)</strong><br/>Test will fail after 400 milliseconds</p><p><strong>@Before public void prepareRecords();</strong><br/>Run before each unit test</p><p><strong>@After public void cleanupJunk()</strong><br/>Run after each unit test</p><p><strong>@BeforeClass void whenTestClassInstanciated();</strong><br/>Run once, when the test class gets instantiated</p><p><strong>@AfterClass void whenTestClassCompleted()</strong><br/>Run once when the test class is dismissed</p><p><strong>Assert.assert</strong><br/>There are tons of assertions, look it up</p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="TestFunctionalTests">Test &#8211; Functional Tests</h2><p><strong>public class ApplicationTest extends FunctionalTest</strong><br/>Functional test are unit tests with an HTTP orientation</p><p><strong>newRequest()</strong><br/><strong>newResponse()</strong><br/><strong>GET(request, url)</strong><br/><strong>PUT(request, url)</strong><br/><strong>POST(request,url)</strong><br/><strong>DELETE(request,url)</strong><br/><strong>assertStatus(404, response)</strong><br/><strong>assertHeaderEquals(headerName, value, response)</strong><br/><strong>assertContentEquals(content, response)</strong><br/><strong>assertContentType(type,response)</strong><br/><strong>clearCookies()</strong></p>
+                    </div>
+                                    <div class="cs odd">
+                       <h2 id="TestSeleniumTests">Test &#8211; Selenium Tests</h2><p><strong>#{selenium}</strong><br/>clearSession()<br/>open(&#8216;/admin&#8217;)<br/>assertTextPresent(&#8216;Login&#8217;)<br/>type(&#8216;login&#8217;, &#8216;admin&#8217;)<br/>type(&#8216;password&#8217;, &#8216;secret&#8217;)<br/>clickAndWait(&#8216;signin&#8217;)</p><p>// Verify that the user in correctly logged in<br/>assertText(&#8216;success&#8217;, &#8216;Welcome admin!&#8217;)<br/><strong>#{/selenium}</strong></p>
+                    </div>
+                                    <div class="cs even">
+                       <h2 id="TestDataloader">Test &#8211; Data loader</h2><p><strong>@Before public void setUp() { Fixtures.deleteAll();</strong><br/><strong>Fixtures.load("data.yml");}</strong><br/>Fixtures is used to initialise the datastore before running a unit test</p><p><strong>#{fixture delete:'all', load:'data.yml' /}</strong><br/><strong>#{selenium} ... #{/selenium}</strong><br/>Same idea using a Selenium test</p>
+                    </div>
+                            </div>
+        </div>
+    </body>
+</html>

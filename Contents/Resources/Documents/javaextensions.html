@@ -1,0 +1,142 @@
+<html>
+    <head>
+        <title>Play manual - Java extensions</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Javaextensions">Java extensions</h1><p>Java extensions add convenience methods to objects for use in view templates, making expressions more expressive.</p><p>The code examples show an example template expression, with its result on the next line.</p><h2 id="anamecollectionCollectionextensionsa"><a name="collection">Collection extensions</a></h2><h3 id="anamejoinjoinseparatora"><a name="join">join(separator)</a></h3><p>Concatenates the collection’s entries, with the given separator between each entry. Returns: <code>String</code>.</p><pre><code>${['red', 'green', 'blue'].join('/')}
+red/green/blue
+</code></pre><h3 id="anamelastlasta"><a name="last">last()</a></h3><p>Returns the last item in the list. Returns: <code>Object</code>.</p><pre><code>${['red', 'green', 'blue'].last()}
+blue
+</code></pre><h3 id="anamepluralizepluralizea"><a name="pluralize">pluralize()</a></h3><p>Returns an ‘s’ when the collection’s size is not 1. Returns: <code>String</code>.</p><pre><code>colour${['red', 'green', 'blue'].pluralize()} 
+colours
+</code></pre><h3 id="anamepluralizepluralpluralizeplurala"><a name="pluralize-plural">pluralize(plural)</a></h3><p>Returns the given plural when the collection’s size is not 1. Returns: <code>String</code>.</p><pre><code>box${['red', 'green', 'blue'].pluralize('es')}
+boxes
+</code></pre><h3 id="anamepluralizesingularpluralpluralizesingularplurala"><a name="pluralize-singular-plural">pluralize(singular, plural)</a></h3><p>Returns the given plural form when the collection’s size is not 1; returns the given singular form when it is 1. Returns: <code>String</code>.</p><pre><code>journ${['red'].pluralize('al', 'aux')}
+journal
+ 
+journ${['red', 'green', 'blue'].pluralize('al', 'aux')}
+journaux
+</code></pre><h2 id="anamedateDateextensionsa"><a name="date">Date extensions</a></h2><h3 id="anameformatformatformata"><a name="format">format(format)</a></h3><p>Formats the date using the given date format pattern. Returns: <code>String</code>.</p><pre><code>${new Date(1275910970000).format('dd MMMM yyyy hh:mm:ss')}
+07 June 2010 01:42:50
+</code></pre><h3 id="anameformatlanguageformatformatlanguagea"><a name="format-language">format(format, language)</a></h3><p>Formats the date using the given date format pattern, in the given language. Returns: <code>String</code>.</p><pre><code>${new Date(1275910970000).format('dd MMMM yyyy hh:mm:ss', 'fr')}
+07 juin 2010 01:42:50
+</code></pre><h3 id="anamesincesincea"><a name="since">since()</a></h3><p>Formats the date as a relative time, compared to now, e.g. <b>3 minutes ago</b>. Returns: <code>String</code>.</p><pre><code>${new Date(new Date().getTime() - 1000000).since()}
+16 minutes ago
+</code></pre><p>You can customise the output using the following messages: <code>since.seconds</code>, <code>since.minutes</code>, <code>since.hours</code>, <code>since.days</code>, <code>since.months</code> and <code>since.years</code>.  </p><h3 id="anamesinceconditionsinceconditiona"><a name="since-condition">since(condition)</a></h3><p>Formats the date as a relative time, compared to now. If the condition is true, dates more than one month ago are formatted as a date. Returns: <code>String</code>.</p><p>You can customise the output using the same messages as for <code>since()</code>, as well as <code>since.format</code> for dates more than one month ago.  </p><pre><code>${new Date(1262350000000).since(false)}
+5 months ago
+ 
+${new Date(1262350000000).since(true)}
+Jan 1, 2010
+</code></pre><h2 id="anamelongLongextensionsa"><a name="long">Long extensions</a></h2><h3 id="anameasdateasdateformata"><a name="asdate">asdate(format)</a></h3><p>Formats a time stamp as a date. Returns: <code>String</code> - a formatted date.</p><pre><code>${1275910970000.asdate('dd MMMM yyyy hh:mm:ss')}
+07 June 2010 01:42:50
+</code></pre><h3 id="anameasdatelanguageasdateformatlanguagea"><a name="asdate-language">asdate(format, language)</a></h3><p>Formats a time stamp as a date, in the given language. Returns: <code>String</code> - a formatted date.</p><pre><code>${1275910970000.asdate('dd MMMM yyyy hh:mm:ss', 'fr')}
+07 juin 2010 01:42:50
+</code></pre><h3 id="anameformatSizeformatSizea"><a name="formatSize">formatSize()</a></h3><p>Formats a number of bytes as a file size, with units.</p><pre><code>${726016L.formatSize()}
+709KB
+</code></pre><h2 id="anamemapMapextensionsa"><a name="map">Map extensions</a></h2><h3 id="anameasAttrasAttra"><a name="asAttr">asAttr()</a></h3><p>Formats the map’s keys and values as HTML attributes. Returns: <code>play.templates.Template.ExecutableTemplate.RawData</code>.</p><pre><code>${[id:'42', color:'red'].asAttr()}
+id="42" color="red" 
+</code></pre><h3 id="anameasAttrconditionasAttrconditiona"><a name="asAttr-condition">asAttr(condition)</a></h3><p>Formats the map’s keys and values as HTML attributes, if the condition is true. Returns: <code>play.templates.Template.ExecutableTemplate.RawData</code>.</p><pre><code>${[id:'42', color:'red'].asAttr(true)}
+id="42" color="red" 
+</code></pre><h2 id="anamenumberNumberextensionsa"><a name="number">Number extensions</a></h2><h3 id="anamenumberdivisibleBydivisibleBydivisora"><a name="number-divisibleBy">divisibleBy(divisor)</a></h3><p>Returns true if the number is divisible by the given number &#8211; the divisor. Returns: <code>boolean</code>.</p><pre><code>${42.divisibleBy(7)}
+true
+</code></pre><h3 id="anamenumberformatformatformata"><a name="number-format">format(format)</a></h3><p>Formats the number using the given number format pattern. Returns: <code>String</code>.</p><pre><code>${42.format('000.00')}
+042.00
+</code></pre><h3 id="anamenumberformatCurrencyformatCurrencycurrencyCodea"><a name="number-formatCurrency">formatCurrency(currencyCode)</a></h3><p>Formats the number as a currency for the given currency code, e.g. <b>EUR</b>. Returns: <code>String</code>.</p><pre><code>${42.formatCurrency('EUR').raw()}
+&amp;euro; 42.00
+</code></pre><h3 id="anamenumberpagepagepageSizea"><a name="number-page">page(pageSize)</a></h3><p>Returns the page number, for the given page size, from interpreting the number as an index. Returns: <code>Integer</code>.</p><pre><code>${42.page(10)}
+5
+</code></pre><h3 id="anamenumberpluralizepluralizea"><a name="number-pluralize">pluralize()</a></h3><p>Returns an ‘s’ when the number is not 1. Returns: <code>String</code>.</p><pre><code>colour${['red', 'green', 'blue'].pluralize()} - colour${3.pluralize()} 
+colours - colours
+</code></pre><h3 id="anamenumberpluralizepluralpluralizeplurala"><a name="number-pluralize-plural">pluralize(plural)</a></h3><p>Returns the given plural when the number is not 1. Returns: <code>String</code>.</p><pre><code>box${3.pluralize('es')}
+boxes
+</code></pre><h3 id="anamenumberpluralizesingularpluralpluralizesingularplurala"><a name="number-pluralize-singular-plural">pluralize(singular, plural)</a></h3><p>Returns the given plural form when the number is not 1; returns the given singular form when it is 1. Returns: <code>String</code>.</p><pre><code>journ${1.pluralize('al', 'aux')}
+journal
+ 
+journ${3.pluralize('al', 'aux')}
+journaux
+</code></pre><h2 id="anameobjectObjectextensionsa"><a name="object">Object extensions</a></h2><h3 id="anameaddSlashesaddSlashesa"><a name="addSlashes">addSlashes()</a></h3><p>Backslash-escapes Java-escaped single and double quotes in the object’s <code>String</code> representation. Returns: <code>String</code>.</p><pre><code>${"single quote (')".addSlashes().raw()} ${'double quote (")'.addSlashes().raw()}
+single quote (\') double quote (\")
+</code></pre><h3 id="anamecapAllcapAlla"><a name="capAll">capAll()</a></h3><p>Capitalises every word in the object’s <code>String</code> representation. Returns: <code>String</code>.</p><pre><code>${"lorum ipsum dolor".capAll()}
+Lorum Ipsum Dolor
+</code></pre><h3 id="anamecapFirstcapFirsta"><a name="capFirst">capFirst()</a></h3><p>Capitalises the first word in the object’s <code>String</code> representation. Returns: <code>String</code>.</p><pre><code>${"lorum ipsum dolor".capFirst()}
+Lorum ipsum dolor
+</code></pre><h3 id="anamecutcutsubstringa"><a name="cut">cut(substring)</a></h3><p>Removes occurrences of the given sub-string. Returns: <code>String</code>.</p><pre><code>${"lorum ipsum dolor".cut('um')}
+lor ips dolor
+</code></pre><h3 id="anameescapeescapea"><a name="escape">escape()</a></h3><p>Escapes reserved HTML characters in the object’s <code>String</code> representation. Returns: <code>String</code>.</p><pre><code>${"The &lt;blink>tag&lt;/blink> is evil".escape().raw()}
+The &amp;lt;blink&amp;gt;tag&amp;lt;/blink&amp;gt; is evil
+</code></pre><h3 id="anamenl2brnl2bra"><a name="nl2br">nl2br()</a></h3><p>Replaces new-line characters with HTML <code>br</code> tags. Returns: <code>String</code>.</p><pre><code>${"one\ntwo".nl2br()}
+one&lt;br/>two
+</code></pre><p>Note that the output is not HTML-escaped, so that the <code>br</code> tag is not escaped in the output. This means that you probably want to use <a href="javaextensions.html#escape">escape()</a> for user input:</p><pre><code>${userInput.escape().nl2br()}
+</code></pre><h3 id="anamerawrawa"><a name="raw">raw()</a></h3><p>Returns the object without template escaping. Returns: <code>play.templates.Template.ExecutableTemplate.RawData</code>.</p><pre><code>${'&lt;'}
+&amp;lt;
+ 
+${'&lt;'.raw()}
+&lt;
+</code></pre><h3 id="anamerawconditionrawconditiona"><a name="raw-condition">raw(condition)</a></h3><p>Returns the object without template escaping, if the condition is true. Returns: <code>play.templates.Template.ExecutableTemplate.RawData</code>.</p><pre><code>${'&lt;'.raw(true)}
+&lt;
+</code></pre><h3 id="anameyesNoyesNoyesnoa"><a name="yesNo">yesNo(&#8216;yes&#8217;, &#8216;no&#8217;)</a></h3><p>Returns the first parameter (‘yes’) if the object evaluates to true, or the second parameter (‘no’) otherwise. Returns: <code>String</code>.</p><pre><code>${"".yesno('yes', 'no')}
+no
+ 
+${"not empty".yesno('yes', 'no')}
+yes
+</code></pre><h2 id="anamestringStringextensionsa"><a name="string">String extensions</a></h2><h3 id="anameasXmlasXmla"><a name="asXml">asXml()</a></h3><p>Parses the given XML string. Returns: <code>groovy.util.slurpersupport.GPathResult</code>.</p><h3 id="anamecamelCasecamelCasea"><a name="camelCase">camelCase()</a></h3><p>Formats the string in camel case, as if for a Java class name. Returns: <code>String</code>.</p><pre><code>${"lorum ipsum dolor".camelCase()}
+LorumIpsumDolor
+</code></pre><h3 id="anamecapitalizeWordscapitalizeWordsa"><a name="capitalizeWords">capitalizeWords()</a></h3><p>Capitalises every word in the string. Returns: <code>String</code>.</p><pre><code>${"lorum ipsum dolor".capitalizeWords()}
+Lorum Ipsum Dolor
+</code></pre><h3 id="anameescapeHtmlescapeHtmla"><a name="escapeHtml">escapeHtml()</a></h3><p>Escapes reserved HTML characters. Returns: <code>String</code>.</p><pre><code>${"The &lt;blink>tag&lt;/blink> is evil".escapeHtml().raw()}
+The &amp;lt;blink&amp;gt;tag&amp;lt;/blink&amp;gt; is evil
+</code></pre><h3 id="anameescapeJavaScriptescapeJavaScripta"><a name="escapeJavaScript">escapeJavaScript()</a></h3><p>Escapes reserved JavaScript characters. Returns: <code>String</code>.</p><pre><code>${"single quote (') double quote (\")".escapeJavaScript().raw()}
+single quote (\') double quote (\")
+</code></pre><h3 id="anameescapeXmlescapeXmla"><a name="escapeXml">escapeXml()</a></h3><p>Escapes reserved XML characters. Returns: <code>String</code>.</p><pre><code>${"&lt;>\"&amp;".escapeXml().raw()}
+&amp;lt;&amp;gt;&amp;quot;&amp;amp;
+</code></pre><h3 id="anamenoAccentsnoAccentsa"><a name="noAccents">noAccents()</a></h3><p>Removes accents from the letters in the string. Returns: <code>String</code>.</p><pre><code>${"Stéphane Épardaud".noAccents()}
+Stephane Epardaud
+</code></pre><h3 id="anamepadpadlengtha"><a name="pad">pad(length)</a></h3><p>Pads the string with <code>&amp;nbsp;</code> up to the given length. Returns: <code>String</code>.</p><pre><code>${"x".pad(4).raw()}
+x&amp;nbsp;&amp;nbsp;&amp;nbsp;
+</code></pre><h3 id="anameslugifyslugifya"><a name="slugify">slugify()</a></h3><p>Formats the string as a ‘slug’ for use in URLs, that avoids reserved URL path characters. Returns: <code>String</code>.</p><pre><code>${"The Play! framework’s manual".slugify()}
+the-play-framework-s-manual
+</code></pre><h3 id="anameurlEncodeurlEncodea"><a name="urlEncode">urlEncode()</a></h3><p>Escapes reserved URL query string characters. Returns: <code>String</code>.</p><pre><code>${"!@#\$%^&amp;()".urlEncode()}
+%21%40%23%24%25%5E%26%28%29
+</code></pre><h2 id="anamestringarrayStringarrayextensionsa"><a name="string-array">String array extensions</a></h2><h3 id="anameaddaddvaluea"><a name="add">add(value)</a></h3><p>Adds value to the end of the array. Returns: <code>String[]</code>.</p><pre><code>${(["red", "green", "blue"] as String[]).add('pink').join(' ')}
+red green blue pink
+</code></pre><h3 id="anamecontainscontainsstringa"><a name="contains">contains(string)</a></h3><p>Returns true if the array contains the given string. Returns: <code>boolean</code>.</p><pre><code>${(['red', 'green', 'blue'] as String[]).contains('green')}
+true
+</code></pre><h3 id="anameremoveremovestringa"><a name="remove">remove(string)</a></h3><p>Returns the array, with the given string removed. Returns: <code>String[]</code>.</p><pre><code>${(['red', 'green', 'blue'] as String[]).remove('green').join(' ')}
+red blue
+</code></pre></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

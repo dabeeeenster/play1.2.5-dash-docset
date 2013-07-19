@@ -1,0 +1,232 @@
+<html>
+    <head>
+        <title>Play manual - Managing database evolutions</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Managingdatabaseevolutions">Managing database evolutions</h1><p>When you use a relational database, you need a way to track and organize your database schema evolutions. Typically there are several situation where you need a more sophisticated way to track your database schema changes:</p><ul><li>When you work within a team of developers, each person needs to know about any schema change.</li><li>When you deploy on a production server, you need to have a robust way to upgrade your database schema.</li><li>If you work on several machines, you need to keep all database schemas synchronized.</li></ul><p class="note">If you work with JPA, Hibernate can handle database evolutions for you automatically. Evolutions are useful if you don&#8217;t use JPA or if you prefer to manually take care of your database schema for finer tuning. </p><h2 id="anamescriptEvolutionsscriptsa"><a name="script">Evolutions scripts</a></h2><p>Play tracks your database evolutions using several <b>evolutions script</b>. These scripts are written in plain old SQL and should be located in the <code>db/evolutions</code> directory of your application.</p><p>The first script is named <code>1.sql</code>, the second script <code>2.sql</code>, and so on…</p><p>Each script contains two parts:</p><ul><li>The <strong>Ups</strong> part the describe the required transformations.</li><li>The <strong>Downs</strong> part that describe how to revert them.</li></ul><p>For example, take a look at this first evolution script that bootstrap a basic application:</p><pre><code># Users schema
+ 
+# --- !Ups
+ 
+CREATE TABLE User (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    email varchar(255) NOT NULL,
+    password varchar(255) NOT NULL,
+    fullname varchar(255) NOT NULL,
+    isAdmin boolean NOT NULL,
+    PRIMARY KEY (id)
+);
+ 
+# --- !Downs
+ 
+DROP TABLE User; 
+</code></pre><p>As you see you have to delimitate the both <strong>Ups</strong> and <strong>Downs</strong> section by using comments in your SQL script.</p><p>Evolutions are automatically activated if a database is configured in <code>application.conf</code> and evolution scripts are present. You can disable them by setting <a href="configuration.html#evolutions.enabled">evolutions.enabled</a> to <code>false</code>. For example when tests set up their own database you can disable evolutions for the test environment.</p><p>When <b>evolutions</b> are activated, Play will check your database schema state before each request in DEV mode, or before starting the application in PROD mode. In DEV mode, if your database schema is not up to date, an error page will suggest that you synchronise your database schema by running the appropriate SQL script.</p><p><img border="0" src="images/evolutions"/></p><p>If you agree with the SQL script, you can apply it directly by clicking on the &#8216;Apply evolutions&#8217; button.</p><p class="note">If you use an in-memory database (<strong>db=mem</strong>), Play will automatically run all evolutions scripts if your database is empty.</p><h2 id="Synchronizingconcurrentchanges">Synchronizing concurrent changes</h2><p>Now let’s imagine that we have two developers working on this project. Developer A will work on a feature that requires a new database table. So he will create the following <code>2.sql</code> evolution script:</p><pre><code># Add Post
+ 
+# --- !Ups
+CREATE TABLE Post (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    title varchar(255) NOT NULL,
+    content text NOT NULL,
+    postedAt date NOT NULL,
+    author_id bigint(20) NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES User(id),
+    PRIMARY KEY (id)
+);
+ 
+# --- !Downs
+DROP TABLE Post;
+</code></pre><p>Play will apply this evolution script to Developer A’s database.</p><p>On the other hand, developer B will work on a feature that requires altering the <code>User</code> table. So he will also create the following <code>2.sql</code> evolution script:</p><pre><code># Update User
+ 
+# --- !Ups
+ALTER TABLE User ADD age INT;
+ 
+# --- !Downs
+ALTER TABLE User DROP age;
+</code></pre><p>Developer B finishes his feature and commits (let&#8217;s say they are using Git). Now developer A has to merge the his colleague’s work before continuing, so he runs <code>git pull</code>, and the merge has a conflict, like:</p><pre><code>Auto-merging db/evolutions/2.sql
+CONFLICT (add/add): Merge conflict in db/evolutions/2.sql
+Automatic merge failed; fix conflicts and then commit the result.
+</code></pre><p>Each developer has created a <code>2.sql</code> evolution script. So developer A needs to merge the contents of this file:</p><pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+# Add Post
+ 
+# --- !Ups
+CREATE TABLE Post (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    title varchar(255) NOT NULL,
+    content text NOT NULL,
+    postedAt date NOT NULL,
+    author_id bigint(20) NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES User(id),
+    PRIMARY KEY (id)
+);
+ 
+# --- !Downs
+DROP TABLE Post;
+=======
+# Update User
+ 
+# --- !Ups
+ALTER TABLE User ADD age INT;
+ 
+# --- !Downs
+ALTER TABLE User DROP age;
+>>>>>>> devB
+</code></pre><p>The merge is really easy to do:</p><pre><code># Add Post and update User
+ 
+# --- !Ups
+ALTER TABLE User ADD age INT;
+ 
+CREATE TABLE Post (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    title varchar(255) NOT NULL,
+    content text NOT NULL,
+    postedAt date NOT NULL,
+    author_id bigint(20) NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES User(id),
+    PRIMARY KEY (id)
+);
+ 
+# --- !Downs
+ALTER TABLE User DROP age;
+ 
+DROP TABLE Post;
+</code></pre><p>This evolution script represents the new <b>revision 2</b> of the database, that is different of the previous revision 2 that developer A has already applied. </p><p>So Play will detect it and ask developer A to synchronize his database by first reverting the old revision 2 already applied, and by applying the new revision 2 script:</p><p><img border="0" src="images/evolutions-conflict"/></p><h2 id="Inconsistentstates">Inconsistent states</h2><p>Sometimes you will make a mistake in your evolution scripts, and they will fail. In this case, Play will mark your database schema as being in an inconsistent state and will ask you to manually resolve the problem before continuing.</p><p>For example, the <b>Ups</b> script of this evolution has an error:</p><pre><code># Add another column to User
+  
+# --- !Ups
+ALTER TABLE Userxxx ADD company varchar(255);
+ 
+# --- !Downs
+ALTER TABLE User DROP company;
+</code></pre><p>So trying to apply this evolution will fail, and Play will mark your database schema as inconsistent:</p><p><img border="0" src="images/evolutions-inconsistent"/></p><p>Now before continuing you have to fix this inconsistency. So you run the fixed SQL command:</p><pre><code>ALTER TABLE User ADD company varchar(255);
+</code></pre><p>…&#xa0;and then mark this problem as manually resolved by clicking on the button.</p><p>But because your evolution script has errors, you probably want to fix it. So you modify the <code>3.sql</code> script:</p><pre><code># Add another column to User
+  
+# --- !Ups
+ALTER TABLE User ADD company varchar(255);
+ 
+# --- !Downs
+ALTER TABLE User DROP company;
+</code></pre><p>Play detects this new evolution that replaces the previous <strong>3</strong> one, and will run the following script:</p><p><img border="0" src="images/evolutions-resolve"/></p><p>Now everything is fixed, and you can continue to work.</p><p class="note">In developement mode however it is often simpler to simply trash your developement database and reapply all evolutions from the beginning.</p><h2 id="Evolutionscommands">Evolutions commands</h2><p>The evolutions run interactively in DEV mode. However in PROD mode you will have to use the <code>evolutions</code> command to fix your database schema before running your application.</p><p>If you try to run a application in production mode on a database that is not up to date, the application will not start.</p><pre><code>~        _            _ 
+~  _ __ | | __ _ _  _| |
+~ | '_ \| |/ _' | || |_|
+~ |  __/|_|\____|\__ (_)
+~ |_|            |__/   
+~
+~ play! master-localbuild, http://www.playframework.org
+~ framework ID is prod
+~
+~ Ctrl+C to stop
+~ 
+13:33:22 INFO  ~ Starting ~/test
+13:33:22 INFO  ~ Precompiling ...
+13:33:24 INFO  ~ Connected to jdbc:mysql://localhost
+13:33:24 WARN  ~ 
+13:33:24 WARN  ~ Your database is not up to date.
+13:33:24 WARN  ~ Use `play evolutions` command to manage database evolutions.
+13:33:24 ERROR ~ 
+ 
+@662c6n234
+Can't start in PROD mode with errors
+ 
+Your database needs evolution!
+An SQL script will be run on your database.
+ 
+play.db.Evolutions$InvalidDatabaseRevision
+	at play.db.Evolutions.checkEvolutionsState(Evolutions.java:323)
+	at play.db.Evolutions.onApplicationStart(Evolutions.java:197)
+	at play.Play.start(Play.java:452)
+	at play.Play.init(Play.java:298)
+	at play.server.Server.main(Server.java:141)
+Exception in thread "main" play.db.Evolutions$InvalidDatabaseRevision
+	at play.db.Evolutions.checkEvolutionsState(Evolutions.java:323)
+	at play.db.Evolutions.onApplicationStart(Evolutions.java:197)
+	at play.Play.start(Play.java:452)
+	at play.Play.init(Play.java:298)
+	at play.server.Server.main(Server.java:141)
+</code></pre><p>The error message ask you to run the <code>play evolutions</code> command:</p><pre><code>$ play evolutions
+~        _            _ 
+~  _ __ | | __ _ _  _| |
+~ | '_ \| |/ _' | || |_|
+~ |  __/|_|\____|\__ (_)
+~ |_|            |__/   
+~
+~ play! master-localbuild, http://www.playframework.org
+~ framework ID is gbo
+~
+~ Connected to jdbc:mysql://localhost
+~ Application revision is 3 [15ed3f5] and Database revision is 0 [da39a3e]
+~
+~ Your database needs evolutions!
+ 
+# ----------------------------------------------------------------------------
+ 
+# --- Rev:1,Ups - 6b21167
+ 
+CREATE TABLE User (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    email varchar(255) NOT NULL,
+    password varchar(255) NOT NULL,
+    fullname varchar(255) NOT NULL,
+    isAdmin boolean NOT NULL,
+    PRIMARY KEY (id)
+);
+ 
+# --- Rev:2,Ups - 9cf7e12
+  
+ALTER TABLE User ADD age INT;
+CREATE TABLE Post (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    title varchar(255) NOT NULL,
+    content text NOT NULL,
+    postedAt date NOT NULL,
+    author_id bigint(20) NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES User(id),
+    PRIMARY KEY (id)
+);
+ 
+# --- Rev:3,Ups - 15ed3f5
+ 
+ALTER TABLE User ADD company varchar(255);
+ 
+# ----------------------------------------------------------------------------
+ 
+~ Run `play evolutions:apply` to automatically apply this script to the db
+~ or apply it yourself and mark it done using `play evolutions:markApplied`
+~
+</code></pre><p>If you want Play to automatically run this evolution for you, then run:</p><pre><code>$ play evolutions:apply
+</code></pre><p>If you prefer running this script manually on your production database, you need to tell Play that you database is up-to-date by running:</p><pre><code>$ play evolutions:markApplied
+</code></pre><p>If there are any errors while automatically running the evolutions scripts, as in DEV mode, you need to manually resolve them, and mark your database schema a fixed by running:</p><pre><code>$ play evolutions:resolve
+</code></pre><p class="note"><b>Continuing the discussion</b></p><p>Learn how to configure <span class="next"><a href="logs.html">Logging</a></span>.</p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>

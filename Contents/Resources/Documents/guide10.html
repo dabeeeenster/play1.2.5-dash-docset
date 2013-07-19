@@ -1,0 +1,146 @@
+<html>
+    <head>
+        <title>Play manual - Completing the application tests</title>
+        <link rel="stylesheet" href="playmanual/manual.css" type="text/css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="playmanual/wiki.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" src="playmanual/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="playmanual/navigation.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+
+            <div id="docSidebar">
+                
+                <div id="logo">
+                    <img src="playmanual/logo.png">                
+                    <h2 id="version">Play 1.2.5</h2>
+                </div>
+
+                <h2>Browse </h2>
+                <ul>
+                                        <li id="gotoc"><a href="home.html">Table of contents</a></li>
+                </ul>
+                
+                
+                <h2>Contents</h2>
+                <div id="toc"></div>
+
+                <h2>Search</h2>
+                <p>Get help with google</p>
+                <div id="searchBox"><form action="http://www.google.com/cse" id="cse-search-box"><div><input type="hidden" name="cx" value="002614023023983855063:jn1mu_7bof0" /><input type="hidden" name="ie" value="UTF-8" /><input type="text" name="q" size="28" style="font-size:14px"/></div></form><script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script></div>
+
+            </div>
+
+            <div id="pageContent">
+
+                <div class="wikistyle"><h1 id="Completingtheapplicationtests">Completing the application tests</h1><p>We’ve now finished the blog engine we wanted to create in this tutorial. However the project itself is not yet completely finished. To be totally confident with our code we need to add more tests to the project. </p><p>Of course we’ve already written unit tests in order to test all the yabe model layer functionality. And it’s great as it will ensure that the blog engine’s core functionality is well tested. But a web application is not only about the ‘model’ part. We need to ensure that the web interface works as expected. That means testing the yabe blog engine’s controller layer. But we even need to test the UI itself, as for example, our JavaScript code.</p><h2 id="anamecontrollerTestingthecontrollerparta"><a name="controller">Testing the controller part</a></h2><p>Play gives you a way to test directly the application’s controller part using JUnit. We call these tests <b>‘Functional tests’</b>. This is because we want to test the web application’s complete functionality.</p><p>Basically a functional test calls the Play <code>ActionInvoker</code> directly, simulating an HTTP request. So we give an HTTP method, a URI and HTTP parameters. Play then routes the request, invokes the corresponding action and sends you back the filled response. You can then analyze it to check that the response content is like you expected.</p><p>Let’s write a first functional test. Open the <code>yabe/test/ApplicationTest.java</code> unit test:</p><pre><code>import org.junit.*;
+import play.test.*;
+import play.mvc.*;
+import play.mvc.Http.*;
+import models.*;
+ 
+public class ApplicationTest extends FunctionalTest {
+ 
+    @Test
+    public void testThatIndexPageWorks() {
+        Response response = GET("/");
+        assertIsOk(response);
+        assertContentType("text/html", response);
+        assertCharset("utf-8", response);
+    }
+    
+}
+</code></pre><p>It looks like a standard JUnit test for now. Note that we use the Play <code>FunctionalTest</code> super class in order to get all useful utility helpers. This test is correct and just checks that the application home page (typically the <code>/</code> URL renders an HTML response with <b>‘200 OK’</b> as status code).</p><p>Now we will check that the administration area’s security works as expected. Add this new test to the <code>ApplicationTest.java</code> file:</p><pre><code>…
+@Test
+public void testAdminSecurity() {
+    Response response = GET("/admin");
+    assertStatus(302, response);
+    assertHeaderEquals("Location", "/login", response);
+}
+…
+</code></pre><p>Now run the yabe application in test mode using the <code>play test</code> command, open <a href="http://localhost:9000/@tests">http://localhost:9000/@tests</a>, select the <code>ApplicationTest.java</code> test case and run it.</p><p>Is it green?</p><p><img border="0" src="images/guide10-1"/></p><p>Well, we could continue to test all the application functionalities this way, but it’s not the best way to test an HTML-based web application. As our blog engine is intended to be executed in a web browser, it would be better to test it directly in a <b>real web browser</b>. And that’s exactly what Play’s <b>‘Selenium tests’</b> do.</p><p>These kinds of JUnit based <b>‘Functional tests’</b> are still useful, typically to test Web services returning non-HTML responses such as JSON or XML over HTTP.</p><h2 id="anameseleniumWritingSeleniumtestsa"><a name="selenium">Writing Selenium tests</a></h2><p><a href="http://seleniumhq.org">Selenium</a> is a testing tool specifically for testing web applications. The cool thing here is that Selenium allows to run the test suite directly in any existing browser. As it does not use any ‘browser simulator’, you can be sure that you’re testing what your users will use.</p><p>A Selenium test suite is typically written as an HTML file. The HTML syntax required by Selenium is a little tedious to write (formatted using an HTML table element). The good news is that Play helps you generate it using the Play template engine and a set of tags that support a simplified syntax for Selenium scenarios. An interesting side effect of using templates is that you are not tied to ‘static scenarios’ any more and you can use the power of Play templates (looping, conditional blocks) to write more complicated tests.</p><p class="note">However you can still write plain HTML Selenium syntax in the template and forget the specific Selenium tags if needed. It can become interesting if you use one of the several Selenium tools that generates the test scenarios for you, like <a href="http://seleniumhq.org/projects/ide">Selenium IDE</a>.</p><p>The default test suite of a newly-created Play application already contains a Selenium test. Open the <code>yabe/test/Application.test.html</code> file:</p><pre><code>*{ You can use plain Selenium commands using the selenium tag }*
+ 
+#{selenium}
+    // Open the home page, and check that no error occurred
+    open('/')
+    waitForPageToLoad(1000)
+    assertNotTitle('Application error')
+#{/selenium}
+</code></pre><p>This test should run without any problem with the yabe application. It just opens the home page and checks that the page content does not contain the ‘Application error’ text.</p><p>However like any complex test, you need to set-up a set of well-known data before navigating the application and testing it. We will of course reuse the fixture concept and the <code>yabe/test/data.yml</code> file that we’ve used before. To import this data set before the test suite, just use the <code>#{fixture /}</code> tag:</p><pre><code>#{fixture delete:'all', load:'data.yml' /}
+ 
+#{selenium}
+    // Open the home page, and check that no error occurred
+    open('/')
+    waitForPageToLoad(1000)
+    assertNotTitle('Application error')
+#{/selenium}
+</code></pre><p>Another important thing to check is that we have a fresh user session at the test start. The session being stored in a browser transient cookie, you would keep the same session during two successive test runs.</p><p>So let’s start our test with a special command:</p><pre><code>#{fixture delete:'all', load:'data.yml' /}
+ 
+#{selenium}
+    clearSession()
+ 
+    // Open the home page, and check that no error occurred
+    open('/')
+    waitForPageToLoad(1000)
+    assertNotTitle('Application error')
+#{/selenium}
+</code></pre><p>Run it to be sure that there is no mistake. It should be green.</p><p>So we can write a more specific test. Open the home page and check that the default posts are present:</p><pre><code>#{fixture delete:'all', load:'data.yml' /}
+ 
+#{selenium 'Check home page'}
+    clearSession()
+ 
+    // Open the home page
+    open('/')
+ 
+    // Check that the front post is present
+    assertTextPresent('About the model layer')
+    assertTextPresent('by Bob, 14 Jun 09')
+    assertTextPresent('2 comments , latest by Guest')
+    assertTextPresent('It is the domain-specific representation')
+ 
+    // Check older posts
+    assertTextPresent('The MVC application')
+    assertTextPresent('Just a test of YABE')
+#{/selenium}
+</code></pre><p>We use the standard Selenium syntax, called <a href="http://seleniumhq.org/docs/02_selenium_ide.html#selenium-commands-selenese">Selenese</a>.</p><p>Run it (you can run in a different window just by opening the test link in a new window).</p><p><img border="0" src="images/guide10-2"/></p><p>We will now test the comments form. Just add a new <code>#{selenium /}</code> tag to the template:</p><pre><code>#{selenium 'Test comments'}
+ 
+    // Click on 'The MVC application post'
+    clickAndWait('link=The MVC application')
+    assertTextPresent('The MVC application')
+    assertTextPresent('no comments')
+    
+    // Post a new comment
+    type('content', 'Hello')
+    clickAndWait('css=input[type=submit]')
+    
+    // Should get an error
+    assertTextPresent('no comments')
+    assertTextPresent('Author is required')
+    type('author', 'Me')
+    clickAndWait('css=input[type=submit]')
+    
+    // Check
+    assertTextPresent('Thanks for posting Me')
+    assertTextPresent('1 comment')
+    assertTextPresent('Hello')
+#{/selenium}
+</code></pre><p>And run it. Well it fails; and we have a serious problem here.</p><p><img border="0" src="images/guide10-3"/></p><p>We can’t really correctly test the captcha mechanism, so we have to cheat. In test mode we will validate any code as a correct captcha. We know that we’re in test mode when the framework id is <code>test</code>. So let’s modify the <code>postComment</code> action in the <code>yabe/app/controllers/Application.java</code> file to skip this validation in test mode:</p><pre><code>…
+if(!Play.id.equals("test")) {
+    validation.equals(code, Cache.get(randomID)).message("Invalid code. Please type it again");
+}
+…
+</code></pre><p>Now just modify the test case to type any code in the text field, as is:</p><pre><code>…
+type('author', 'Me')
+type('code', 'XXXXX')
+clickAndWait('css=input[type=submit]')
+…
+</code></pre><p>And now run the test again, it should work.</p><h2 id="anamecoberturaMeasuringcodecoveragea"><a name="cobertura">Measuring code coverage</a></h2><p>Of course we haven’t written all required test cases for the application. But it’s enough for this tutorial. Now in a real-world project, how can we know if we have written enough test cases? We need something called <b>‘code coverage’</b>. </p><p>The <a href="http://www.playframework.org/modules/cobertura">Cobertura module</a> generates code coverage reports using the <a href="http://cobertura.sourceforge.net/">Cobertura</a> tool. Install the module using the <code>install</code> command:</p><pre><code>play install cobertura-{version}
+</code></pre><p>We need to enable this module only for test mode. So add this line to the <code>application.conf</code> file, and restart the application in test mode.</p><pre><code># Import the cobertura module in test mode
+%test.module.cobertura=${play.path}/modules/cobertura
+</code></pre><p>Now reopen the browser at the <a href="http://localhost:9000/@tests">http://localhost:9000/@tests</a> URL, select all tests and run them. All should be green.</p><p><img border="0" src="images/guide10-5"/></p><p>When all tests are passed, stop the application and cobertura will then generate the code coverage report. You can then open the <code>yabe/test-result/code-coverage/index.html</code> in your browser and check the report.</p><p><img border="0" src="images/guide10-4"/></p><p>If you start the application again, you can also view it at <a href="http://localhost:9000/@cobertura">http://localhost:9000/@cobertura</a>.</p><p>As you see we’re far from testing all of the application’s cases. A good testing suite should approach 100%, even if it is of course nearly impossible to check all the code. Typically because we often need to hack in test mode, like we did for the captcha.</p><p class="note">Next: <span class="next"><a href="guide11.html">Preparing for production</a></span>. </p></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>
